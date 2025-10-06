@@ -1,0 +1,6 @@
+@WefaaqAPI_HostAddress = http://localhost:5287
+
+GET {{WefaaqAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
