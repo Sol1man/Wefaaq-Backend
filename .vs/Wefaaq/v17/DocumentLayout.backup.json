@@ -1,7 +1,52 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\Wefaaq Project\\Wefaaq Backend\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.api\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|solutionrelative:wefaaq.api\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.dal\\entities\\organizationrecord.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|solutionrelative:wefaaq.dal\\entities\\organizationrecord.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.dal\\entities\\organization.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|solutionrelative:wefaaq.dal\\entities\\organization.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.dal\\entities\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|solutionrelative:wefaaq.dal\\entities\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DDD6B1AE-7898-4BDE-895C-111672B599F0}|Wefaaq.Bll\\Wefaaq.Bll.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.bll\\dtos\\clientdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DDD6B1AE-7898-4BDE-895C-111672B599F0}|Wefaaq.Bll\\Wefaaq.Bll.csproj|solutionrelative:wefaaq.bll\\dtos\\clientdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.api\\controllers\\organizationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|solutionrelative:wefaaq.api\\controllers\\organizationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DDD6B1AE-7898-4BDE-895C-111672B599F0}|Wefaaq.Bll\\Wefaaq.Bll.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.bll\\dtos\\organizationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DDD6B1AE-7898-4BDE-895C-111672B599F0}|Wefaaq.Bll\\Wefaaq.Bll.csproj|solutionrelative:wefaaq.bll\\dtos\\organizationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DDD6B1AE-7898-4BDE-895C-111672B599F0}|Wefaaq.Bll\\Wefaaq.Bll.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.bll\\services\\clientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DDD6B1AE-7898-4BDE-895C-111672B599F0}|Wefaaq.Bll\\Wefaaq.Bll.csproj|solutionrelative:wefaaq.bll\\services\\clientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.dal\\repositories\\organizationrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|solutionrelative:wefaaq.dal\\repositories\\organizationrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.dal\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED557DCA-55AA-45BA-A362-C83527737EDB}|Wefaaq.Dal\\Wefaaq.Dal.csproj|solutionrelative:wefaaq.dal\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|d:\\wefaaq project\\wefaaq backend\\wefaaq.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|solutionrelative:wefaaq.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,15 +54,148 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 7,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e5c86464-96be-4d7c-9a8b-abcb3bbf5f92}"
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{e5c86464-96be-4d7c-9a8b-abcb3bbf5f92}"
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Organization.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Entities\\Organization.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Dal\\Entities\\Organization.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Entities\\Organization.cs",
+              "RelativeToolTip": "Wefaaq.Dal\\Entities\\Organization.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAAAAcAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-10T18:53:08.683Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Client.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Entities\\Client.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Dal\\Entities\\Client.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Entities\\Client.cs",
+              "RelativeToolTip": "Wefaaq.Dal\\Entities\\Client.cs",
+              "ViewState": "AgIAADMAAAAAAAAAAAAUwDsAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-10T18:52:18.17Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "OrganizationDto.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\DTOs\\OrganizationDto.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Bll\\DTOs\\OrganizationDto.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\DTOs\\OrganizationDto.cs",
+              "RelativeToolTip": "Wefaaq.Bll\\DTOs\\OrganizationDto.cs",
+              "ViewState": "AgIAAFEAAAAAAAAAAAA7wA0AAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T18:46:34.761Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "OrganizationController.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Api\\Controllers\\OrganizationController.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Api\\Controllers\\OrganizationController.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Api\\Controllers\\OrganizationController.cs",
+              "RelativeToolTip": "Wefaaq.Api\\Controllers\\OrganizationController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T18:46:31.008Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ClientService.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\Services\\ClientService.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Bll\\Services\\ClientService.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\Services\\ClientService.cs",
+              "RelativeToolTip": "Wefaaq.Bll\\Services\\ClientService.cs",
+              "ViewState": "AgIAADcAAAAAAAAAAAAkwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T16:52:27.071Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ClientController.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Api\\Controllers\\ClientController.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Api\\Controllers\\ClientController.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Api\\Controllers\\ClientController.cs",
+              "RelativeToolTip": "Wefaaq.Api\\Controllers\\ClientController.cs",
+              "ViewState": "AgIAADIAAAAAAAAAAAAAAFsAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T16:27:53.819Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "OrganizationRecord.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Entities\\OrganizationRecord.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Dal\\Entities\\OrganizationRecord.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Entities\\OrganizationRecord.cs",
+              "RelativeToolTip": "Wefaaq.Dal\\Entities\\OrganizationRecord.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-10T18:57:48.906Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "OrganizationRepository.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Repositories\\OrganizationRepository.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Dal\\Repositories\\OrganizationRepository.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Repositories\\OrganizationRepository.cs",
+              "RelativeToolTip": "Wefaaq.Dal\\Repositories\\OrganizationRepository.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T16:52:04.727Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ClientRepository.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Repositories\\ClientRepository.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Dal\\Repositories\\ClientRepository.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Repositories\\ClientRepository.cs",
+              "RelativeToolTip": "Wefaaq.Dal\\Repositories\\ClientRepository.cs",
+              "ViewState": "AgIAACwAAAAAAAAAAAAswDoAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T16:51:25.794Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ClientDto.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\DTOs\\ClientDto.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Bll\\DTOs\\ClientDto.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\DTOs\\ClientDto.cs",
+              "RelativeToolTip": "Wefaaq.Bll\\DTOs\\ClientDto.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAAAAkAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T16:47:34.506Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Api\\Program.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Api\\Program.cs",
+              "ToolTip": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Api\\Program.cs",
+              "RelativeToolTip": "Wefaaq.Api\\Program.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T16:16:05.017Z"
             }
           ]
         }

@@ -93,7 +93,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Apply migrations on startup (optional - remove in production)
+// Apply migrations and seed data on startup (optional - remove in production)
 if (app.Environment.IsDevelopment())
 {
     using (var scope = app.Services.CreateScope())
@@ -102,11 +102,14 @@ if (app.Environment.IsDevelopment())
         try
         {
             db.Database.Migrate();
+
+            // Seed data
+            DataSeeder.SeedData(db);
         }
         catch (Exception ex)
         {
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating the database.");
+            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
         }
     }
 }

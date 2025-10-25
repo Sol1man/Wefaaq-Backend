@@ -154,4 +154,48 @@ public class ClientController : ControllerBase
         }
         return NoContent();
     }
+
+    /// <summary>
+    /// Create new client with organizations in a single request
+    /// </summary>
+    /// <param name="dto">Client and organizations creation data</param>
+    /// <returns>Created client with organizations</returns>
+    [HttpPost("with-organizations")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ClientDto>> AddClientWithOrganizations([FromBody] ClientWithOrganizationsCreateDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var client = await _clientService.AddClientWithOrganizationsAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = client.Id }, client);
+    }
+
+    /// <summary>
+    /// Update existing client with organizations in a single request
+    /// </summary>
+    /// <param name="id">Client ID</param>
+    /// <param name="dto">Client and organizations update data</param>
+    /// <returns>Updated client with organizations</returns>
+    [HttpPut("{id}/with-organizations")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ClientDto>> EditClientWithOrganizations(Guid id, [FromBody] ClientWithOrganizationsUpdateDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var client = await _clientService.EditClientWithOrganizationsAsync(id, dto);
+        if (client == null)
+        {
+            return NotFound(new { message = $"Client with ID {id} not found" });
+        }
+        return Ok(client);
+    }
 }

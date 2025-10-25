@@ -21,13 +21,6 @@ public interface IOrganizationRepository : IGenericRepository<Organization>
     Task<IEnumerable<Organization>> GetWithExpiringCardsAsync();
 
     /// <summary>
-    /// Get organizations with their clients
-    /// </summary>
-    /// <param name="id">Organization ID</param>
-    /// <returns>Organization with clients or null</returns>
-    Task<Organization?> GetWithClientsAsync(Guid id);
-
-    /// <summary>
     /// Get organizations by client ID
     /// </summary>
     /// <param name="clientId">Client ID</param>

@@ -52,23 +52,15 @@ public class OrganizationService : IOrganizationService
             throw new ValidationException(validationResult.Errors);
         }
 
+        // Verify client exists
+        var client = await _clientRepository.GetByIdAsync(organizationCreateDto.ClientId);
+        if (client == null)
+        {
+            throw new InvalidOperationException($"Client with ID {organizationCreateDto.ClientId} not found");
+        }
+
         var organization = _mapper.Map<Organization>(organizationCreateDto);
         organization.Id = Guid.NewGuid();
-
-        // Handle client relationships
-        if (organizationCreateDto.ClientIds.Any())
-        {
-            var clients = new List<Client>();
-            foreach (var clientId in organizationCreateDto.ClientIds)
-            {
-                var client = await _clientRepository.GetByIdAsync(clientId);
-                if (client != null)
-                {
-                    clients.Add(client);
-                }
-            }
-            organization.Clients = clients;
-        }
 
         var createdOrganization = await _organizationRepository.AddAsync(organization);
         return _mapper.Map<OrganizationDto>(createdOrganization);
@@ -88,23 +80,14 @@ public class OrganizationService : IOrganizationService
             return null;
         }
 
-        _mapper.Map(organizationUpdateDto, existingOrganization);
-
-        // Handle client relationships
-        existingOrganization.Clients.Clear();
-        if (organizationUpdateDto.ClientIds.Any())
+        // Verify client exists
+        var client = await _clientRepository.GetByIdAsync(organizationUpdateDto.ClientId);
+        if (client == null)
         {
-            var clients = new List<Client>();
-            foreach (var clientId in organizationUpdateDto.ClientIds)
-            {
-                var client = await _clientRepository.GetByIdAsync(clientId);
-                if (client != null)
-                {
-                    clients.Add(client);
-                }
-            }
-            existingOrganization.Clients = clients;
+            throw new InvalidOperationException($"Client with ID {organizationUpdateDto.ClientId} not found");
         }
+
+        _mapper.Map(organizationUpdateDto, existingOrganization);
 
         var updatedOrganization = await _organizationRepository.UpdateAsync(existingOrganization);
         return _mapper.Map<OrganizationDto>(updatedOrganization);

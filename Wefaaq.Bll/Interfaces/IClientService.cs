@@ -60,4 +60,19 @@ public interface IClientService
     /// </summary>
     /// <returns>List of debtor client DTOs</returns>
     Task<IEnumerable<ClientDto>> GetDebtorsAsync();
+
+    /// <summary>
+    /// Create new client with organizations in a single request
+    /// </summary>
+    /// <param name="dto">Client and organizations creation data</param>
+    /// <returns>Created client DTO with organizations</returns>
+    Task<ClientDto> AddClientWithOrganizationsAsync(ClientWithOrganizationsCreateDto dto);
+
+    /// <summary>
+    /// Update existing client with organizations in a single request
+    /// </summary>
+    /// <param name="id">Client ID</param>
+    /// <param name="dto">Client and organizations update data</param>
+    /// <returns>Updated client DTO with organizations or null if not found</returns>
+    Task<ClientDto?> EditClientWithOrganizationsAsync(Guid id, ClientWithOrganizationsUpdateDto dto);
 }

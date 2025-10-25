@@ -23,11 +23,6 @@ public class WefaaqContext : DbContext
     public DbSet<Organization> Organizations { get; set; }
 
     /// <summary>
-    /// Client-Organization join table
-    /// </summary>
-    public DbSet<ClientOrganization> ClientOrganizations { get; set; }
-
-    /// <summary>
     /// Organization records table (سجلات المؤسسات)
     /// </summary>
     public DbSet<OrganizationRecord> OrganizationRecords { get; set; }
@@ -67,7 +62,7 @@ public class WefaaqContext : DbContext
             entity.HasIndex(e => e.Email).IsUnique();
         });
 
-        // Configure Organization entity
+        // Configure Organization entity with one-to-many relationship to Client
         modelBuilder.Entity<Organization>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -75,21 +70,11 @@ public class WefaaqContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
-        });
 
-        // Configure Client-Organization many-to-many relationship
-        modelBuilder.Entity<ClientOrganization>(entity =>
-        {
-            entity.HasKey(e => new { e.ClientId, e.OrganizationId });
-
+            // One-to-many relationship: Client has many Organizations
             entity.HasOne(e => e.Client)
-                .WithMany(e => e.ClientOrganizations)
+                .WithMany(e => e.Organizations)
                 .HasForeignKey(e => e.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(e => e.Organization)
-                .WithMany(e => e.ClientOrganizations)
-                .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -159,12 +144,6 @@ public class WefaaqContext : DbContext
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-
-        // Configure many-to-many relationship for Client-Organization
-        modelBuilder.Entity<Client>()
-            .HasMany(e => e.Organizations)
-            .WithMany(e => e.Clients)
-            .UsingEntity<ClientOrganization>();
     }
 
     public override int SaveChanges()

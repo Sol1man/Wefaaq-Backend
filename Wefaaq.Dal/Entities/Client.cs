@@ -61,12 +61,7 @@ public class Client
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Many-to-many relationship with organizations
+    /// One-to-many relationship with organizations
     /// </summary>
     public virtual ICollection<Organization> Organizations { get; set; } = new List<Organization>();
-
-    /// <summary>
-    /// Join table for many-to-many relationship
-    /// </summary>
-    public virtual ICollection<ClientOrganization> ClientOrganizations { get; set; } = new List<ClientOrganization>();
 }

@@ -19,15 +19,13 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.Organizations, opt => opt.Ignore())
-            .ForMember(dest => dest.ClientOrganizations, opt => opt.Ignore());
+            .ForMember(dest => dest.Organizations, opt => opt.Ignore());
 
         CreateMap<ClientUpdateDto, Client>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.Organizations, opt => opt.Ignore())
-            .ForMember(dest => dest.ClientOrganizations, opt => opt.Ignore());
+            .ForMember(dest => dest.Organizations, opt => opt.Ignore());
 
         // Organization mappings
         CreateMap<Organization, OrganizationDto>()
@@ -35,7 +33,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Licenses, opt => opt.MapFrom(src => src.Licenses))
             .ForMember(dest => dest.Workers, opt => opt.MapFrom(src => src.Workers))
             .ForMember(dest => dest.Cars, opt => opt.MapFrom(src => src.Cars))
-            .ForMember(dest => dest.Clients, opt => opt.MapFrom(src => src.Clients));
+            .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Client));
 
         CreateMap<OrganizationCreateDto, Organization>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -45,8 +43,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Licenses, opt => opt.Ignore())
             .ForMember(dest => dest.Workers, opt => opt.Ignore())
             .ForMember(dest => dest.Cars, opt => opt.Ignore())
-            .ForMember(dest => dest.Clients, opt => opt.Ignore())
-            .ForMember(dest => dest.ClientOrganizations, opt => opt.Ignore());
+            .ForMember(dest => dest.Client, opt => opt.Ignore());
 
         CreateMap<OrganizationUpdateDto, Organization>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -56,8 +53,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Licenses, opt => opt.Ignore())
             .ForMember(dest => dest.Workers, opt => opt.Ignore())
             .ForMember(dest => dest.Cars, opt => opt.Ignore())
-            .ForMember(dest => dest.Clients, opt => opt.Ignore())
-            .ForMember(dest => dest.ClientOrganizations, opt => opt.Ignore());
+            .ForMember(dest => dest.Client, opt => opt.Ignore());
 
         // Organization Record mappings
         CreateMap<OrganizationRecord, OrganizationRecordDto>();

@@ -8,13 +8,14 @@ public class OrganizationDto
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool CardExpiringSoon { get; set; }
+    public Guid ClientId { get; set; }
+    public ClientDto? Client { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public List<OrganizationRecordDto> Records { get; set; } = new();
     public List<OrganizationLicenseDto> Licenses { get; set; } = new();
     public List<OrganizationWorkerDto> Workers { get; set; } = new();
     public List<OrganizationCarDto> Cars { get; set; } = new();
-    public List<ClientDto> Clients { get; set; } = new();
 }
 
 /// <summary>
@@ -24,7 +25,7 @@ public class OrganizationCreateDto
 {
     public string Name { get; set; } = string.Empty;
     public bool CardExpiringSoon { get; set; }
-    public List<Guid> ClientIds { get; set; } = new();
+    public Guid ClientId { get; set; }
 }
 
 /// <summary>
@@ -34,7 +35,7 @@ public class OrganizationUpdateDto
 {
     public string Name { get; set; } = string.Empty;
     public bool CardExpiringSoon { get; set; }
-    public List<Guid> ClientIds { get; set; } = new();
+    public Guid ClientId { get; set; }
 }
 
 /// <summary>

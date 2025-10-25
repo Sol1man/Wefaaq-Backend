@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Wefaaq.Dal;
 
@@ -11,9 +12,11 @@ using Wefaaq.Dal;
 namespace Wefaaq.Dal.Migrations
 {
     [DbContext(typeof(WefaaqContext))]
-    partial class WefaaqContextModelSnapshot : ModelSnapshot
+    [Migration("20251010192544_UpdateClientOrganizationRelationship")]
+    partial class UpdateClientOrganizationRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

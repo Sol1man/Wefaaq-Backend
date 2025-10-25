@@ -20,6 +20,7 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
             .Include(o => o.Licenses)
             .Include(o => o.Workers)
             .Include(o => o.Cars)
+            .Include(o => o.Client)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
@@ -27,20 +28,18 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
     {
         return await _dbSet
             .Where(o => o.CardExpiringSoon)
+            .Include(o => o.Client)
             .ToListAsync();
-    }
-
-    public async Task<Organization?> GetWithClientsAsync(Guid id)
-    {
-        return await _dbSet
-            .Include(o => o.Clients)
-            .FirstOrDefaultAsync(o => o.Id == id);
     }
 
     public async Task<IEnumerable<Organization>> GetByClientIdAsync(Guid clientId)
     {
         return await _dbSet
-            .Where(o => o.Clients.Any(c => c.Id == clientId))
+            .Where(o => o.ClientId == clientId)
+            .Include(o => o.Records)
+            .Include(o => o.Licenses)
+            .Include(o => o.Workers)
+            .Include(o => o.Cars)
             .ToListAsync();
     }
 
@@ -51,7 +50,7 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
             .Include(o => o.Licenses)
             .Include(o => o.Workers)
             .Include(o => o.Cars)
-            .Include(o => o.Clients)
+            .Include(o => o.Client)
             .ToListAsync();
     }
 
@@ -62,7 +61,7 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
             .Include(o => o.Licenses)
             .Include(o => o.Workers)
             .Include(o => o.Cars)
-            .Include(o => o.Clients)
+            .Include(o => o.Client)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 }

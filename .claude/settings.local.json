@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Program Files\\dotnet\\dotnet.exe\" new sln -n Wefaaq)"
+      "Bash(\"C:\\Program Files\\dotnet\\dotnet.exe\" new sln -n Wefaaq)",
+      "Bash(dotnet build:*)",
+      "Bash(dir \"D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\Validators\" /b)"
     ],
     "deny": [],
     "ask": []

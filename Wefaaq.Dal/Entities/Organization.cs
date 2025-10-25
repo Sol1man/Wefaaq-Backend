@@ -35,6 +35,16 @@ public class Organization
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
+    /// Foreign key to Client (each organization belongs to one client)
+    /// </summary>
+    public Guid ClientId { get; set; }
+
+    /// <summary>
+    /// Navigation property to Client
+    /// </summary>
+    public virtual Client Client { get; set; } = null!;
+
+    /// <summary>
     /// Organization records collection (سجلات المؤسسة)
     /// </summary>
     public virtual ICollection<OrganizationRecord> Records { get; set; } = new List<OrganizationRecord>();
@@ -53,14 +63,4 @@ public class Organization
     /// Organization cars collection (سيارات المؤسسة)
     /// </summary>
     public virtual ICollection<OrganizationCar> Cars { get; set; } = new List<OrganizationCar>();
-
-    /// <summary>
-    /// Many-to-many relationship with clients
-    /// </summary>
-    public virtual ICollection<Client> Clients { get; set; } = new List<Client>();
-
-    /// <summary>
-    /// Join table for many-to-many relationship
-    /// </summary>
-    public virtual ICollection<ClientOrganization> ClientOrganizations { get; set; } = new List<ClientOrganization>();
 }
