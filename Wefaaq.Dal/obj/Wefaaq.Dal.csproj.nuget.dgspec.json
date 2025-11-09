@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Wefaaq.Dal.csproj": {}
+    "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Dal\\Wefaaq.Dal.csproj": {}
   },
   "projects": {
-    "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Wefaaq.Dal.csproj": {
+    "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Dal\\Wefaaq.Dal.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Wefaaq.Dal.csproj",
+        "projectUniqueName": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Dal\\Wefaaq.Dal.csproj",
         "projectName": "Wefaaq.Dal",
-        "projectPath": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\Wefaaq.Dal.csproj",
-        "packagesPath": "C:\\Users\\abdel\\.nuget\\packages\\",
-        "outputPath": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Dal\\obj\\",
+        "projectPath": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Dal\\Wefaaq.Dal.csproj",
+        "packagesPath": "C:\\Users\\DEVOPSolution\\.nuget\\packages\\",
+        "outputPath": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Dal\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\abdel\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\DEVOPSolution\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -59,6 +59,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[8.0.0, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[9.0.10, )"
             }
           },
           "imports": [
@@ -77,7 +81,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

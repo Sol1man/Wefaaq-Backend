@@ -5508,23 +5508,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\abdel\\.nuget\\packages\\": {},
+    "C:\\Users\\DEVOPSolution\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Tests\\Wefaaq.Tests.csproj",
+      "projectUniqueName": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Tests\\Wefaaq.Tests.csproj",
       "projectName": "Wefaaq.Tests",
-      "projectPath": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Tests\\Wefaaq.Tests.csproj",
-      "packagesPath": "C:\\Users\\abdel\\.nuget\\packages\\",
-      "outputPath": "D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Tests\\obj\\",
+      "projectPath": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Tests\\Wefaaq.Tests.csproj",
+      "packagesPath": "C:\\Users\\DEVOPSolution\\.nuget\\packages\\",
+      "outputPath": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\abdel\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\DEVOPSolution\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -5590,7 +5590,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
