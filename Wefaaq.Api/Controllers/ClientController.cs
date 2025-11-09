@@ -2,14 +2,15 @@ using Microsoft.AspNetCore.Mvc;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
+
 namespace Wefaaq.Api.Controllers;
 
 /// <summary>
 /// Client management endpoints
 /// </summary>
+[Route("api/clients")]
 [ApiController]
-[Route("api/[controller]")]
-[Produces("application/json")]
+
 public class ClientController : ControllerBase
 {
     private readonly IClientService _clientService;
@@ -25,7 +26,7 @@ public class ClientController : ControllerBase
     /// Get all clients
     /// </summary>
     /// <returns>List of clients</returns>
-    [HttpGet]
+    [HttpGet("get-all")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ClientDto>>> GetAll()
     {
