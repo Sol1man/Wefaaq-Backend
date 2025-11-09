@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "D:\\MyWork\\Wefaaq-Backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_QUICK_REFERENCE.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CLIENT_CONTROLLER_QUICK_REFERENCE.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_REFACTORING_SUMMARY.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CLIENT_CONTROLLER_REFACTORING_SUMMARY.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|d:\\mywork\\wefaaq-backend\\wefaaq.api\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|solutionrelative:wefaaq.api\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_IMPLEMENTATION.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:AUTOWRAPPER_IMPLEMENTATION.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
     },
@@ -13,10 +25,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|d:\\mywork\\wefaaq-backend\\wefaaq.api\\extensions\\autowrapperextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|solutionrelative:wefaaq.api\\extensions\\autowrapperextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|d:\\mywork\\wefaaq-backend\\wefaaq.api\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BD7B01E6-71F9-4FB4-AEF5-6668E777EDF9}|Wefaaq.Api\\Wefaaq.Api.csproj|solutionrelative:wefaaq.api\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DDD6B1AE-7898-4BDE-895C-111672B599F0}|Wefaaq.Bll\\Wefaaq.Bll.csproj|d:\\mywork\\wefaaq-backend\\wefaaq.bll\\mappings\\mappingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -57,6 +65,18 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_EXAMPLES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:AUTOWRAPPER_EXAMPLES.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_QUICK_REFERENCE.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:AUTOWRAPPER_QUICK_REFERENCE.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_REFACTORING.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CLIENT_CONTROLLER_REFACTORING.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_MIGRATION_GUIDE.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CLIENT_CONTROLLER_MIGRATION_GUIDE.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -66,7 +86,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -82,72 +102,59 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "AUTOWRAPPER_EXAMPLES.md",
-              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_EXAMPLES.md",
-              "RelativeDocumentMoniker": "AUTOWRAPPER_EXAMPLES.md",
-              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_EXAMPLES.md",
-              "RelativeToolTip": "AUTOWRAPPER_EXAMPLES.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFwBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-09T22:49:22.025Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AUTOWRAPPER_IMPLEMENTATION.md",
-              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_IMPLEMENTATION.md",
-              "RelativeDocumentMoniker": "AUTOWRAPPER_IMPLEMENTATION.md",
-              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_IMPLEMENTATION.md",
-              "RelativeToolTip": "AUTOWRAPPER_IMPLEMENTATION.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAOkAAAAAAAAAAAAAAA==",
+              "Title": "CLIENT_CONTROLLER_QUICK_REFERENCE.md",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_QUICK_REFERENCE.md",
+              "RelativeDocumentMoniker": "CLIENT_CONTROLLER_QUICK_REFERENCE.md",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_QUICK_REFERENCE.md",
+              "RelativeToolTip": "CLIENT_CONTROLLER_QUICK_REFERENCE.md",
+              "ViewState": "AgIAAAcBAAAAAAAAAAAAAAcBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-09T22:48:46.88Z",
+              "WhenOpened": "2025-11-09T22:56:08.241Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "AutoWrapperExtensions.cs",
-              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Extensions\\AutoWrapperExtensions.cs",
-              "RelativeDocumentMoniker": "Wefaaq.Api\\Extensions\\AutoWrapperExtensions.cs",
-              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Extensions\\AutoWrapperExtensions.cs",
-              "RelativeToolTip": "Wefaaq.Api\\Extensions\\AutoWrapperExtensions.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T22:47:33.855Z",
+              "DocumentIndex": 1,
+              "Title": "CLIENT_CONTROLLER_REFACTORING_SUMMARY.md",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_REFACTORING_SUMMARY.md",
+              "RelativeDocumentMoniker": "CLIENT_CONTROLLER_REFACTORING_SUMMARY.md",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_REFACTORING_SUMMARY.md",
+              "RelativeToolTip": "CLIENT_CONTROLLER_REFACTORING_SUMMARY.md",
+              "ViewState": "AgIAABkBAAAAAAAAAAAEwCAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-11-09T22:55:37.27Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "CLIENT_CONTROLLER_MIGRATION_GUIDE.md",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_MIGRATION_GUIDE.md",
+              "RelativeDocumentMoniker": "CLIENT_CONTROLLER_MIGRATION_GUIDE.md",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_MIGRATION_GUIDE.md",
+              "RelativeToolTip": "CLIENT_CONTROLLER_MIGRATION_GUIDE.md",
+              "ViewState": "AgIAAHQBAAAAAAAAAIBJwHYBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-11-09T22:54:53.807Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "CLIENT_CONTROLLER_REFACTORING.md",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_REFACTORING.md",
+              "RelativeDocumentMoniker": "CLIENT_CONTROLLER_REFACTORING.md",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\CLIENT_CONTROLLER_REFACTORING.md",
+              "RelativeToolTip": "CLIENT_CONTROLLER_REFACTORING.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAALQBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-11-09T22:54:18.088Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 10,
-              "Title": "DATABASE_CONNECTION_FIX.md",
-              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\DATABASE_CONNECTION_FIX.md",
-              "RelativeDocumentMoniker": "DATABASE_CONNECTION_FIX.md",
-              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\DATABASE_CONNECTION_FIX.md",
-              "RelativeToolTip": "DATABASE_CONNECTION_FIX.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-09T22:28:30.075Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Test-SqlConnection.ps1",
-              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Test-SqlConnection.ps1",
-              "RelativeDocumentMoniker": "Test-SqlConnection.ps1",
-              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\Test-SqlConnection.ps1",
-              "RelativeToolTip": "Test-SqlConnection.ps1",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-11-09T22:28:30.043Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
               "Title": "MIGRATION_FIX.md",
               "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\MIGRATION_FIX.md",
               "RelativeDocumentMoniker": "MIGRATION_FIX.md",
@@ -160,7 +167,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 9,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\appsettings.Development.json",
               "RelativeDocumentMoniker": "Wefaaq.Api\\appsettings.Development.json",
@@ -173,7 +180,72 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 2,
+              "Title": "ClientController.cs",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Controllers\\ClientController.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Api\\Controllers\\ClientController.cs",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Controllers\\ClientController.cs",
+              "RelativeToolTip": "Wefaaq.Api\\Controllers\\ClientController.cs",
+              "ViewState": "AgIAAFMAAAAAAAAAAAAIwGwAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-09T22:07:35.227Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Test-SqlConnection.ps1",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Test-SqlConnection.ps1",
+              "RelativeDocumentMoniker": "Test-SqlConnection.ps1",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\Test-SqlConnection.ps1",
+              "RelativeToolTip": "Test-SqlConnection.ps1",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-09T22:28:30.043Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "DATABASE_CONNECTION_FIX.md",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\DATABASE_CONNECTION_FIX.md",
+              "RelativeDocumentMoniker": "DATABASE_CONNECTION_FIX.md",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\DATABASE_CONNECTION_FIX.md",
+              "RelativeToolTip": "DATABASE_CONNECTION_FIX.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-11-09T22:28:30.075Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AutoWrapperExtensions.cs",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Extensions\\AutoWrapperExtensions.cs",
+              "RelativeDocumentMoniker": "Wefaaq.Api\\Extensions\\AutoWrapperExtensions.cs",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Extensions\\AutoWrapperExtensions.cs",
+              "RelativeToolTip": "Wefaaq.Api\\Extensions\\AutoWrapperExtensions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-09T22:47:33.855Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AUTOWRAPPER_IMPLEMENTATION.md",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_IMPLEMENTATION.md",
+              "RelativeDocumentMoniker": "AUTOWRAPPER_IMPLEMENTATION.md",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_IMPLEMENTATION.md",
+              "RelativeToolTip": "AUTOWRAPPER_IMPLEMENTATION.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAOkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-11-09T22:48:46.88Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\appsettings.json",
               "RelativeDocumentMoniker": "Wefaaq.Api\\appsettings.json",
@@ -186,20 +258,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ClientController.cs",
-              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Controllers\\ClientController.cs",
-              "RelativeDocumentMoniker": "Wefaaq.Api\\Controllers\\ClientController.cs",
-              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Controllers\\ClientController.cs",
-              "RelativeToolTip": "Wefaaq.Api\\Controllers\\ClientController.cs",
-              "ViewState": "AgIAABcAAAAAAAAAAAAkwD8AAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T22:07:35.227Z",
+              "DocumentIndex": 15,
+              "Title": "AUTOWRAPPER_EXAMPLES.md",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_EXAMPLES.md",
+              "RelativeDocumentMoniker": "AUTOWRAPPER_EXAMPLES.md",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_EXAMPLES.md",
+              "RelativeToolTip": "AUTOWRAPPER_EXAMPLES.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFwBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-11-09T22:49:22.025Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 16,
+              "Title": "AUTOWRAPPER_QUICK_REFERENCE.md",
+              "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_QUICK_REFERENCE.md",
+              "RelativeDocumentMoniker": "AUTOWRAPPER_QUICK_REFERENCE.md",
+              "ToolTip": "D:\\MyWork\\Wefaaq-Backend\\AUTOWRAPPER_QUICK_REFERENCE.md",
+              "RelativeToolTip": "AUTOWRAPPER_QUICK_REFERENCE.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-11-09T22:49:58.65Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Api\\Program.cs",
               "RelativeDocumentMoniker": "Wefaaq.Api\\Program.cs",
@@ -212,7 +297,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 13,
               "Title": "QUICK_START.txt",
               "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\QUICK_START.txt",
               "RelativeDocumentMoniker": "QUICK_START.txt",
@@ -225,7 +310,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 14,
               "Title": "WefaaqContextFactory.cs",
               "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Dal\\WefaaqContextFactory.cs",
               "RelativeDocumentMoniker": "Wefaaq.Dal\\WefaaqContextFactory.cs",
@@ -238,7 +323,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "OrganizationDto.cs",
               "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Bll\\DTOs\\OrganizationDto.cs",
               "RelativeDocumentMoniker": "Wefaaq.Bll\\DTOs\\OrganizationDto.cs",
@@ -251,7 +336,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "MappingProfile.cs",
               "DocumentMoniker": "D:\\MyWork\\Wefaaq-Backend\\Wefaaq.Bll\\Mappings\\MappingProfile.cs",
               "RelativeDocumentMoniker": "Wefaaq.Bll\\Mappings\\MappingProfile.cs",
