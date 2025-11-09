@@ -57,7 +57,7 @@ public class ClientController : ControllerBase
     /// </summary>
     /// <param name="id">Client ID</param>
     /// <returns>Client with organizations</returns>
-    [HttpGet("{id}/organizations")]
+    [HttpGet("organizations/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ClientDto>> GetWithOrganizations(Guid id)
