@@ -1,5 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
+using Wefaaq.Api.Extensions;
 using Wefaaq.Api.Middleware;
 using Wefaaq.Bll.Interfaces;
 using Wefaaq.Bll.Mappings;
@@ -12,7 +14,11 @@ using Wefaaq.Dal.RepositoriesInterfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
 // Configure DbContext with SQL Server
 builder.Services.AddDbContext<WefaaqContext>(options =>
@@ -73,7 +79,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 
 // Use global exception handler
-app.UseGlobalExceptionHandler();
+// Note: Commented out because AutoWrapper handles exceptions automatically
+// app.UseGlobalExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
@@ -90,6 +97,10 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
 app.UseAuthorization();
+
+// Use AutoWrapper for automatic response wrapping
+// Placed after authentication/authorization and before endpoint mapping
+app.UseAutoWrapperConfig(apiVersion: "1.0");
 
 app.MapControllers();
 

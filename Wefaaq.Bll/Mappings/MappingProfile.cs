@@ -33,7 +33,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Licenses, opt => opt.MapFrom(src => src.Licenses))
             .ForMember(dest => dest.Workers, opt => opt.MapFrom(src => src.Workers))
             .ForMember(dest => dest.Cars, opt => opt.MapFrom(src => src.Cars))
-            .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Client));
+            .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Client != null ? src.Client.Name : string.Empty));
 
         CreateMap<OrganizationCreateDto, Organization>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
