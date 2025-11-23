@@ -32,16 +32,21 @@ builder.Services.AddDbContext<WefaaqContext>(options =>
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Register services
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<ClientCreateDtoValidator>();
+
+// Configure Firebase Authentication and JWT Bearer
+builder.Services.AddFirebaseAuthentication(builder.Configuration);
 
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -52,6 +57,32 @@ builder.Services.AddSwaggerGen(options =>
         Title = "Wefaaq API",
         Version = "v1",
         Description = "API for managing clients and organizations"
+    });
+
+    // Add JWT Bearer security definition
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter 'Bearer' [space] and then your Firebase ID token"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
     });
 
     // Include XML comments if available
@@ -77,11 +108,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-
-// Use global exception handler
-// Note: Commented out because AutoWrapper handles exceptions automatically
-// app.UseGlobalExceptionHandler();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -96,10 +122,9 @@ app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Use AutoWrapper for automatic response wrapping
-// Placed after authentication/authorization and before endpoint mapping
 app.UseAutoWrapperConfig(apiVersion: "1.0");
 
 app.MapControllers();

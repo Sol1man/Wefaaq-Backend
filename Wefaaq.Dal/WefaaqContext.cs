@@ -42,6 +42,11 @@ public class WefaaqContext : DbContext
     /// </summary>
     public DbSet<OrganizationCar> OrganizationCars { get; set; }
 
+    /// <summary>
+    /// Users table (for authentication)
+    /// </summary>
+    public DbSet<User> Users { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -144,6 +149,31 @@ public class WefaaqContext : DbContext
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        // Configure User entity
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.FirebaseUid).IsRequired().HasMaxLength(128);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.Role).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Index for FirebaseUid (unique)
+            entity.HasIndex(e => e.FirebaseUid).IsUnique();
+            // Index for Email (unique)
+            entity.HasIndex(e => e.Email).IsUnique();
+
+            // Optional relationship to Organization
+            entity.HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+        });
     }
 
     public override int SaveChanges()
@@ -201,6 +231,12 @@ public class WefaaqContext : DbContext
                 if (entry.State == EntityState.Added)
                     car.CreatedAt = DateTime.UtcNow;
                 car.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is User user)
+            {
+                if (entry.State == EntityState.Added)
+                    user.CreatedAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

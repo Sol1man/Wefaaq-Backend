@@ -1,0 +1,165 @@
+using AutoMapper;
+using FirebaseAdmin.Auth;
+using Microsoft.Extensions.Logging;
+using Wefaaq.Bll.DTOs;
+using Wefaaq.Bll.Interfaces;
+using Wefaaq.Dal.Entities;
+using Wefaaq.Dal.RepositoriesInterfaces;
+
+namespace Wefaaq.Bll.Services;
+
+/// <summary>
+/// Authentication service implementation
+/// </summary>
+public class AuthService : IAuthService
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
+    private readonly ILogger<AuthService> _logger;
+
+    public AuthService(
+        IUserRepository userRepository,
+        IMapper mapper,
+        ILogger<AuthService> logger)
+    {
+        _userRepository = userRepository;
+        _mapper = mapper;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Login with Firebase ID token
+    /// </summary>
+    public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
+    {
+        try
+        {
+            // Verify Firebase ID Token
+            FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
+                .VerifyIdTokenAsync(request.IdToken);
+
+            string firebaseUid = decodedToken.Uid;
+            string? email = decodedToken.Claims.ContainsKey("email")
+                ? decodedToken.Claims["email"].ToString()
+                : null;
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return new LoginResponseDto
+                {
+                    Success = false,
+                    Message = "Email not found in Firebase token"
+                };
+            }
+
+            // Check if user exists in database
+            var user = await _userRepository.GetByFirebaseUidAsync(firebaseUid);
+
+            if (user == null)
+            {
+                // Auto-create user if not exists
+                user = new User
+                {
+                    FirebaseUid = firebaseUid,
+                    Email = email,
+                    Name = decodedToken.Claims.ContainsKey("name")
+                        ? decodedToken.Claims["name"].ToString()
+                        : email.Split('@')[0],
+                    Role = "User", // Default role
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _userRepository.AddAsync(user);
+                _logger.LogInformation("New user created with FirebaseUid: {FirebaseUid}", firebaseUid);
+            }
+            else if (!user.IsActive)
+            {
+                return new LoginResponseDto
+                {
+                    Success = false,
+                    Message = "You Are Not Authorized"
+                };
+            }
+
+            // Update last login timestamp
+            await _userRepository.UpdateLastLoginAsync(user.Id);
+
+            var userDto = _mapper.Map<UserDto>(user);
+
+            return new LoginResponseDto
+            {
+                Success = true,
+                User = userDto,
+                Message = "Login successful"
+            };
+        }
+        catch (FirebaseAuthException ex)
+        {
+            _logger.LogError(ex, "Firebase authentication error during login");
+            return new LoginResponseDto
+            {
+                Success = false,
+                Message = "Invalid or expired Firebase token"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during login");
+            return new LoginResponseDto
+            {
+                Success = false,
+                Message = "An error occurred during login"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Logout user
+    /// </summary>
+    public async Task<LogoutResponseDto> LogoutAsync(LogoutRequestDto request)
+    {
+        try
+        {
+            // Optional: Verify token to log the event
+            try
+            {
+                FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
+                    .VerifyIdTokenAsync(request.IdToken);
+
+                string firebaseUid = decodedToken.Uid;
+                _logger.LogInformation("User logged out: {FirebaseUid}", firebaseUid);
+            }
+            catch (FirebaseAuthException)
+            {
+                // Token might be invalid/expired, but still allow logout
+                _logger.LogWarning("Logout attempted with invalid token");
+            }
+
+            return new LogoutResponseDto
+            {
+                Success = true,
+                Message = "Logged out successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during logout");
+            // Still return success for logout
+            return new LogoutResponseDto
+            {
+                Success = true,
+                Message = "Logged out"
+            };
+        }
+    }
+
+    /// <summary>
+    /// Get user by Firebase UID
+    /// </summary>
+    public async Task<UserDto?> GetUserByFirebaseUidAsync(string firebaseUid)
+    {
+        var user = await _userRepository.GetByFirebaseUidAsync(firebaseUid);
+        return user != null ? _mapper.Map<UserDto>(user) : null;
+    }
+}
