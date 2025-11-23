@@ -257,8 +257,11 @@ public class ClientService : IClientService
             client.Organizations = organizations;
         }
 
-        var createdClient = await _clientRepository.AddAsync(client);
-        return _mapper.Map<ClientDto>(createdClient);
+        await _clientRepository.AddAsync(client);
+
+        // Reload the client with all nested entities from database
+        var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(client.Id);
+        return _mapper.Map<ClientDto>(clientWithDetails);
     }
 
     public async Task<ClientDto?> EditClientWithOrganizationsAsync(Guid id, ClientWithOrganizationsUpdateDto dto)
@@ -377,7 +380,10 @@ public class ClientService : IClientService
             existingClient.Organizations = newOrganizations;
         }
 
-        var updatedClient = await _clientRepository.UpdateAsync(existingClient);
-        return _mapper.Map<ClientDto>(updatedClient);
+        await _clientRepository.UpdateAsync(existingClient);
+
+        // Reload the client with all nested entities from database
+        var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(existingClient.Id);
+        return _mapper.Map<ClientDto>(clientWithDetails);
     }
 }

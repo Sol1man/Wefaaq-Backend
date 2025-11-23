@@ -92,9 +92,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
+
+app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

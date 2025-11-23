@@ -17,6 +17,13 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     {
         return await _dbSet
             .Include(c => c.Organizations)
+                .ThenInclude(o => o.Records)
+            .Include(c => c.Organizations)
+                .ThenInclude(o => o.Licenses)
+            .Include(c => c.Organizations)
+                .ThenInclude(o => o.Workers)
+            .Include(c => c.Organizations)
+                .ThenInclude(o => o.Cars)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
@@ -55,15 +62,13 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
 
     public override async Task<IEnumerable<Client>> GetAllAsync()
     {
-        return await _dbSet
-            .Include(c => c.Organizations)
-            .ToListAsync();
+        // Do NOT include organizations - use GetWithOrganizationsAsync for that
+        return await _dbSet.ToListAsync();
     }
 
     public override async Task<Client?> GetByIdAsync(Guid id)
     {
-        return await _dbSet
-            .Include(c => c.Organizations)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        // Do NOT include organizations - use GetWithOrganizationsAsync for that
+        return await _dbSet.FirstOrDefaultAsync(c => c.Id == id);
     }
 }

@@ -10,15 +10,10 @@ public static class DataSeeder
 {
     public static void SeedData(WefaaqContext context)
     {
-        // Clear existing data (order matters due to foreign keys)
-        context.Database.ExecuteSqlRaw("DELETE FROM OrganizationRecords");
-        context.Database.ExecuteSqlRaw("DELETE FROM OrganizationLicenses");
-        context.Database.ExecuteSqlRaw("DELETE FROM OrganizationWorkers");
-        context.Database.ExecuteSqlRaw("DELETE FROM OrganizationCars");
-        context.Database.ExecuteSqlRaw("DELETE FROM Organizations");
-        context.Database.ExecuteSqlRaw("DELETE FROM Clients");
+        // ⚠️ IMPORTANT: Do NOT clear existing data!
+        // Only seed if database is empty to avoid data loss
 
-        // Seed Clients
+        // Seed Clients only if none exist
         if (!context.Clients.Any())
         {
             var clients = new List<Client>
