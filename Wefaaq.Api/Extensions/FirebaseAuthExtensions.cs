@@ -36,24 +36,47 @@ public static class FirebaseAuthExtensions
                 // Try to initialize with service account file
                 if (!string.IsNullOrEmpty(serviceAccountPath))
                 {
-                    var fullPath = Path.Combine(Directory.GetCurrentDirectory(), serviceAccountPath);
+                    // Try multiple path resolution strategies
+                    string? fullPath = null;
+                    var currentDirPath = Path.Combine(Directory.GetCurrentDirectory(), serviceAccountPath);
+                    var baseDirPath = Path.Combine(AppContext.BaseDirectory, serviceAccountPath);
                     
-                    if (File.Exists(fullPath))
+                    // Strategy 1: Relative to current directory
+                    if (File.Exists(currentDirPath))
+                    {
+                        fullPath = currentDirPath;
+                    }
+                    // Strategy 2: Relative to base directory
+                    else if (File.Exists(baseDirPath))
+                    {
+                        fullPath = baseDirPath;
+                    }
+                    // Strategy 3: Absolute path
+                    else if (File.Exists(serviceAccountPath))
+                    {
+                        fullPath = serviceAccountPath;
+                    }
+                    
+                    if (fullPath != null)
                     {
                         FirebaseApp.Create(new AppOptions
                         {
                             Credential = GoogleCredential.FromFile(fullPath),
                             ProjectId = projectId
                         });
-                        Console.WriteLine($"? Firebase initialized successfully with service account: {serviceAccountPath}");
+                        Console.WriteLine($"? Firebase initialized successfully with service account: {fullPath}");
                     }
                     else
                     {
                         // Service account path configured but file doesn't exist
                         throw new FileNotFoundException(
-                            $"Firebase service account file not found at: {fullPath}\n" +
-                            $"Please download your service account JSON from Firebase Console and place it at: {fullPath}\n" +
-                            $"Or update Firebase:ServiceAccountPath in appsettings.json");
+                            $"Firebase service account file not found.\n" +
+                            $"Searched in:\n" +
+                            $"  - {currentDirPath}\n" +
+                            $"  - {baseDirPath}\n" +
+                            $"  - {serviceAccountPath}\n" +
+                            $"Please download your service account JSON from Firebase Console and place it in the API project root.\n" +
+                            $"Or update Firebase:ServiceAccountPath in appsettings.json with the correct path.");
                     }
                 }
                 else
