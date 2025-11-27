@@ -26,16 +26,7 @@ public static class DataSeeder
                     Role = nameof(ENum.UserRole.Administrator),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
-                },
-                new User
-                {
-					Id = 1,
-					FirebaseUid = "l8mmymFMKNdOo6SWENm614y5tF03",
-					Email = "yousefessawy@outlook.com",
-					Role = nameof(ENum.UserRole.Administrator),
-					CreatedAt = DateTime.UtcNow,
-					UpdatedAt = DateTime.UtcNow
-				}
+                }
             };
             context.Users.AddRange(users);
             context.SaveChanges();
