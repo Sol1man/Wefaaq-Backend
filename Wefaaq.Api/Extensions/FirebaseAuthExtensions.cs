@@ -19,7 +19,7 @@ public static class FirebaseAuthExtensions
     {
         // Get Firebase configuration
         var projectId = configuration["Firebase:ProjectId"];
-        var serviceAccountPath = configuration["Firebase:ServiceAccountPath"];
+        var serviceAccountPath = configuration["Firebase:FileName"];
 
         if (string.IsNullOrEmpty(projectId))
         {
