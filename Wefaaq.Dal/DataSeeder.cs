@@ -10,11 +10,39 @@ public static class DataSeeder
 {
     public static void SeedData(WefaaqContext context)
     {
-        // ⚠️ IMPORTANT: Do NOT clear existing data!
-        // Only seed if database is empty to avoid data loss
+		// ⚠️ IMPORTANT: Do NOT clear existing data!
+		// Only seed if database is empty to avoid data loss
 
-        // Seed Clients only if none exist
-        if (!context.Clients.Any())
+		// Seed Users only if none exist
+        if (!context.Users.Any())
+        {
+            var users = new List<User>
+            {
+                new User
+                {
+                    Id = 1,
+					FirebaseUid = "3dMt71HRn7gBLiTYpHgy9UtKyWX2",
+					Email = "admin@wefaaq.com",
+                    Role = nameof(ENum.UserRole.Administrator),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+					Id = 1,
+					FirebaseUid = "l8mmymFMKNdOo6SWENm614y5tF03",
+					Email = "yousefessawy@outlook.com",
+					Role = nameof(ENum.UserRole.Administrator),
+					CreatedAt = DateTime.UtcNow,
+					UpdatedAt = DateTime.UtcNow
+				}
+            };
+            context.Users.AddRange(users);
+            context.SaveChanges();
+		}
+
+		// Seed Clients only if none exist
+		if (!context.Clients.Any())
         {
             var clients = new List<Client>
             {

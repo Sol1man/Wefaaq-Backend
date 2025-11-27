@@ -15,7 +15,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
 
     public async Task<Client?> GetWithOrganizationsAsync(Guid id)
     {
-        return await _dbSet
+        return await DbSet
             .Include(c => c.Organizations)
                 .ThenInclude(o => o.Records)
             .Include(c => c.Organizations)
@@ -29,28 +29,28 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
 
     public async Task<IEnumerable<Client>> GetByClassificationAsync(ClientClassification classification)
     {
-        return await _dbSet
+        return await DbSet
             .Where(c => c.Classification == classification)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<Client>> GetCreditorsAsync()
     {
-        return await _dbSet
+        return await DbSet
             .Where(c => c.Balance > 0)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<Client>> GetDebtorsAsync()
     {
-        return await _dbSet
+        return await DbSet
             .Where(c => c.Balance < 0)
             .ToListAsync();
     }
 
     public async Task<bool> EmailExistsAsync(string email, Guid? excludeClientId = null)
     {
-        var query = _dbSet.Where(c => c.Email.ToLower() == email.ToLower());
+        var query = DbSet.Where(c => c.Email.ToLower() == email.ToLower());
 
         if (excludeClientId.HasValue)
         {
@@ -63,12 +63,12 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     public override async Task<IEnumerable<Client>> GetAllAsync()
     {
         // Do NOT include organizations - use GetWithOrganizationsAsync for that
-        return await _dbSet.ToListAsync();
+        return await DbSet.ToListAsync();
     }
 
     public override async Task<Client?> GetByIdAsync(Guid id)
     {
         // Do NOT include organizations - use GetWithOrganizationsAsync for that
-        return await _dbSet.FirstOrDefaultAsync(c => c.Id == id);
+        return await DbSet.FirstOrDefaultAsync(c => c.Id == id);
     }
 }

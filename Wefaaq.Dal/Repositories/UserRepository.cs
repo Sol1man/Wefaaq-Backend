@@ -18,7 +18,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     /// </summary>
     public async Task<User?> GetByFirebaseUidAsync(string firebaseUid)
     {
-        return await _context.Users
+        return await Context.Users
             .Include(u => u.Organization)
             .FirstOrDefaultAsync(u => u.FirebaseUid == firebaseUid);
     }
@@ -28,7 +28,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     /// </summary>
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await _context.Users
+        return await Context.Users
             .Include(u => u.Organization)
             .FirstOrDefaultAsync(u => u.Email == email);
     }
@@ -38,11 +38,11 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     /// </summary>
     public async Task UpdateLastLoginAsync(int userId)
     {
-        var user = await _context.Users.FindAsync(userId);
+        var user = await Context.Users.FindAsync(userId);
         if (user != null)
         {
             user.LastLoginAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            await Context.SaveChangesAsync();
         }
     }
 }

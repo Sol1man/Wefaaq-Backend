@@ -11,23 +11,13 @@ namespace Wefaaq.Bll.Services;
 /// <summary>
 /// Authentication service implementation
 /// </summary>
-public class AuthService : IAuthService
+public class AuthService(
+	IUserRepository userRepository,
+	IMapper mapper,
+	ILogger<AuthService> logger)
+	: IAuthService
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IMapper _mapper;
-    private readonly ILogger<AuthService> _logger;
-
-    public AuthService(
-        IUserRepository userRepository,
-        IMapper mapper,
-        ILogger<AuthService> logger)
-    {
-        _userRepository = userRepository;
-        _mapper = mapper;
-        _logger = logger;
-    }
-
-    /// <summary>
+	/// <summary>
     /// Login with Firebase ID token
     /// </summary>
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
@@ -53,7 +43,7 @@ public class AuthService : IAuthService
             }
 
             // Check if user exists in database
-            var user = await _userRepository.GetByFirebaseUidAsync(firebaseUid);
+            var user = await userRepository.GetByFirebaseUidAsync(firebaseUid);
 
             if (user == null)
             {
@@ -70,8 +60,8 @@ public class AuthService : IAuthService
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await _userRepository.AddAsync(user);
-                _logger.LogInformation("New user created with FirebaseUid: {FirebaseUid}", firebaseUid);
+                await userRepository.AddAsync(user);
+                logger.LogInformation("New user created with FirebaseUid: {FirebaseUid}", firebaseUid);
             }
             else if (!user.IsActive)
             {
@@ -83,9 +73,9 @@ public class AuthService : IAuthService
             }
 
             // Update last login timestamp
-            await _userRepository.UpdateLastLoginAsync(user.Id);
+            await userRepository.UpdateLastLoginAsync(user.Id);
 
-            var userDto = _mapper.Map<UserDto>(user);
+            var userDto = mapper.Map<UserDto>(user);
 
             return new LoginResponseDto
             {
@@ -96,7 +86,7 @@ public class AuthService : IAuthService
         }
         catch (FirebaseAuthException ex)
         {
-            _logger.LogError(ex, "Firebase authentication error during login");
+            logger.LogError(ex, "Firebase authentication error during login");
             return new LoginResponseDto
             {
                 Success = false,
@@ -105,7 +95,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during login");
+            logger.LogError(ex, "Error during login");
             return new LoginResponseDto
             {
                 Success = false,
@@ -128,12 +118,12 @@ public class AuthService : IAuthService
                     .VerifyIdTokenAsync(request.IdToken);
 
                 string firebaseUid = decodedToken.Uid;
-                _logger.LogInformation("User logged out: {FirebaseUid}", firebaseUid);
+                logger.LogInformation("User logged out: {FirebaseUid}", firebaseUid);
             }
             catch (FirebaseAuthException)
             {
                 // Token might be invalid/expired, but still allow logout
-                _logger.LogWarning("Logout attempted with invalid token");
+                logger.LogWarning("Logout attempted with invalid token");
             }
 
             return new LogoutResponseDto
@@ -144,7 +134,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during logout");
+            logger.LogError(ex, "Error during logout");
             // Still return success for logout
             return new LogoutResponseDto
             {
@@ -159,7 +149,7 @@ public class AuthService : IAuthService
     /// </summary>
     public async Task<UserDto?> GetUserByFirebaseUidAsync(string firebaseUid)
     {
-        var user = await _userRepository.GetByFirebaseUidAsync(firebaseUid);
-        return user != null ? _mapper.Map<UserDto>(user) : null;
+        var user = await userRepository.GetByFirebaseUidAsync(firebaseUid);
+        return user != null ? mapper.Map<UserDto>(user) : null;
     }
 }

@@ -15,7 +15,7 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
 
     public async Task<Organization?> GetWithDetailsAsync(Guid id)
     {
-        return await _dbSet
+        return await DbSet
             .Include(o => o.Records)
             .Include(o => o.Licenses)
             .Include(o => o.Workers)
@@ -26,7 +26,7 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
 
     public async Task<IEnumerable<Organization>> GetWithExpiringCardsAsync()
     {
-        return await _dbSet
+        return await DbSet
             .Where(o => o.CardExpiringSoon)
             .Include(o => o.Client)
             .ToListAsync();
@@ -34,7 +34,7 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
 
     public async Task<IEnumerable<Organization>> GetByClientIdAsync(Guid clientId)
     {
-        return await _dbSet
+        return await DbSet
             .Where(o => o.ClientId == clientId)
             .Include(o => o.Records)
             .Include(o => o.Licenses)
@@ -45,7 +45,7 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
 
     public override async Task<IEnumerable<Organization>> GetAllAsync()
     {
-        return await _dbSet
+        return await DbSet
             .Include(o => o.Records)
             .Include(o => o.Licenses)
             .Include(o => o.Workers)
@@ -56,7 +56,7 @@ public class OrganizationRepository : GenericRepository<Organization>, IOrganiza
 
     public override async Task<Organization?> GetByIdAsync(Guid id)
     {
-        return await _dbSet
+        return await DbSet
             .Include(o => o.Records)
             .Include(o => o.Licenses)
             .Include(o => o.Workers)
