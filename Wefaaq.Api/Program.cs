@@ -21,9 +21,13 @@ builder.Services.AddControllers()
     });
 
 // Configure DbContext with SQL Server
+// Get connection string from environment variable (Railway) or appsettings.json (local)
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<WefaaqContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+        connectionString,
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     )
 );
@@ -149,5 +153,9 @@ if (app.Environment.IsDevelopment())
         }
     }
 }
+
+// Railway port configuration
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Add($"http://0.0.0.0:{port}");
 
 app.Run();
