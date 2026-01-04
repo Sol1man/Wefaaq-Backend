@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd Wefaaq.Api && dotnet restore && dotnet publish -c Release -o out"
+
+[deploy]
+startCommand = "cd Wefaaq.Api/out && dotnet Wefaaq.Api.dll"
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 10
