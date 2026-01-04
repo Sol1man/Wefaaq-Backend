@@ -3,10 +3,9 @@ nixPkgs = ["dotnet-sdk_8"]
 
 [phases.build]
 cmds = [
-  "cd Wefaaq.Api",
-  "dotnet restore",
-  "dotnet publish -c Release -o out"
+  "dotnet restore Wefaaq.Api/Wefaaq.Api.csproj",
+  "dotnet publish Wefaaq.Api/Wefaaq.Api.csproj -c Release -o out"
 ]
 
 [start]
-cmd = "cd Wefaaq.Api/out && dotnet Wefaaq.Api.dll"
+cmd = "cd out && dotnet Wefaaq.Api.dll"
