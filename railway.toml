@@ -4,5 +4,3 @@ buildCommand = "dotnet restore Wefaaq.Api/Wefaaq.Api.csproj && dotnet publish We
 
 [deploy]
 startCommand = "cd out && dotnet Wefaaq.Api.dll"
-restartPolicyType = "on-failure"
-restartPolicyMaxRetries = 10
