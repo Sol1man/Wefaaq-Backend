@@ -15,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers()
+    .AddApplicationPart(typeof(Program).Assembly)
+    .AddControllersAsServices()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -112,19 +114,21 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+// Enable Swagger in all environments for testing
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Wefaaq API v1");
-        options.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Wefaaq API v1");
+    options.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+});
 
 app.UseCors("AllowAll");
 
-app.UseHttpsRedirection();
+// Disable HTTPS redirection in production (Railway handles SSL at proxy level)
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
