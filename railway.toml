@@ -1,6 +1,5 @@
-[build]
-builder = "nixpacks"
-buildCommand = "dotnet restore Wefaaq.Api/Wefaaq.Api.csproj && dotnet publish Wefaaq.Api/Wefaaq.Api.csproj -c Release -o out"
+# Using Dockerfile for build instead of nixpacks
+# Railway will automatically detect and use the Dockerfile
 
 [deploy]
-startCommand = "cd out && dotnet Wefaaq.Api.dll"
+startCommand = "dotnet Wefaaq.Api.dll"

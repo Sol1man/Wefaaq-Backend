@@ -1,5 +1,11 @@
+[variables]
+NIXPACKS_NO_MUSL = "1"
+
 [phases.setup]
 nixPkgs = ["dotnet-sdk_8"]
+
+[phases.install]
+cmds = ["dotnet --version"]
 
 [phases.build]
 cmds = [
