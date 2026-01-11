@@ -3,7 +3,10 @@
     "allow": [
       "Bash(\"C:\\Program Files\\dotnet\\dotnet.exe\" new sln -n Wefaaq)",
       "Bash(dotnet build:*)",
-      "Bash(dir \"D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\Validators\" /b)"
+      "Bash(dir \"D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\Validators\" /b)",
+      "Bash(dir \"D:\\Wefaaq Project\\Wefaaq Backend\" /b)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
