@@ -45,6 +45,8 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientDeletionService, ClientDeletionService>();
+builder.Services.AddScoped<IClientBranchService, ClientBranchService>();
+builder.Services.AddScoped<IExternalWorkerService, ExternalWorkerService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));

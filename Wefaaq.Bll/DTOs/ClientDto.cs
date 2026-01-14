@@ -13,10 +13,13 @@ public class ClientDto
     public string? PhoneNumber { get; set; }
     public ClientClassification Classification { get; set; }
     public decimal Balance { get; set; }
-    public int ExternalWorkersCount { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public List<OrganizationDto> Organizations { get; set; } = new();
+    public List<ExternalWorkerDto> ExternalWorkers { get; set; } = new();
+    public List<ClientBranchDto> ClientBranches { get; set; } = new();
 }
 
 /// <summary>
@@ -29,7 +32,6 @@ public class ClientCreateDto
     public string? PhoneNumber { get; set; }
     public ClientClassification Classification { get; set; }
     public decimal Balance { get; set; }
-    public int ExternalWorkersCount { get; set; }
     public List<Guid> OrganizationIds { get; set; } = new();
 }
 
@@ -43,7 +45,6 @@ public class ClientUpdateDto
     public string? PhoneNumber { get; set; }
     public ClientClassification Classification { get; set; }
     public decimal Balance { get; set; }
-    public int ExternalWorkersCount { get; set; }
     public List<Guid> OrganizationIds { get; set; } = new();
 }
 
@@ -57,7 +58,6 @@ public class ClientWithOrganizationsCreateDto
     public string? PhoneNumber { get; set; }
     public ClientClassification Classification { get; set; }
     public decimal Balance { get; set; }
-    public int ExternalWorkersCount { get; set; }
     public List<OrganizationCreateDtoSimple> Organizations { get; set; } = new();
 }
 
@@ -71,7 +71,6 @@ public class ClientWithOrganizationsUpdateDto
     public string? PhoneNumber { get; set; }
     public ClientClassification Classification { get; set; }
     public decimal Balance { get; set; }
-    public int ExternalWorkersCount { get; set; }
     public List<OrganizationCreateDtoSimple> Organizations { get; set; } = new();
 }
 
@@ -82,8 +81,10 @@ public class OrganizationCreateDtoSimple
 {
     public string Name { get; set; } = string.Empty;
     public bool CardExpiringSoon { get; set; }
+    public Guid? ClientBranchId { get; set; }
     public List<OrganizationRecordCreateDto> Records { get; set; } = new();
     public List<OrganizationLicenseCreateDto> Licenses { get; set; } = new();
     public List<OrganizationWorkerCreateDto> Workers { get; set; } = new();
     public List<OrganizationCarCreateDto> Cars { get; set; } = new();
+    public List<OrganizationUsernameCreateDto> Usernames { get; set; } = new();
 }

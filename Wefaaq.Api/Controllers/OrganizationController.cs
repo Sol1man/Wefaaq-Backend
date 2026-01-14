@@ -405,4 +405,103 @@ public class OrganizationController : ControllerBase
 	}
 
 	#endregion
+
+	#region Organization Usernames
+
+	/// <summary>
+	/// Add username to organization
+	/// </summary>
+	/// <param name="organizationId">Organization ID</param>
+	/// <param name="usernameCreateDto">Username creation data</param>
+	/// <returns>Created username</returns>
+	[HttpPost("usernames/add/{organizationId}")]
+	[ProducesResponseType(typeof(OrganizationUsernameDto), StatusCodes.Status201Created)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> AddUsername(Guid organizationId, [FromBody] OrganizationUsernameCreateDto usernameCreateDto)
+	{
+		try
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var username = await _organizationService.AddUsernameAsync(organizationId, usernameCreateDto);
+			return CreatedAtAction(nameof(GetById), new { id = organizationId }, username);
+		}
+		catch (KeyNotFoundException)
+		{
+			return NotFound(new { message = $"Organization with ID {organizationId} not found" });
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred while adding username to organization with ID {OrganizationId}", organizationId);
+			return BadRequest(new { message = ex.Message });
+		}
+	}
+
+	/// <summary>
+	/// Update organization username
+	/// </summary>
+	/// <param name="organizationId">Organization ID</param>
+	/// <param name="usernameId">Username ID</param>
+	/// <param name="usernameUpdateDto">Username update data</param>
+	/// <returns>Updated username</returns>
+	[HttpPut("usernames/edit/{organizationId}/{usernameId}")]
+	[ProducesResponseType(typeof(OrganizationUsernameDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> UpdateUsername(Guid organizationId, Guid usernameId, [FromBody] OrganizationUsernameUpdateDto usernameUpdateDto)
+	{
+		try
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var username = await _organizationService.UpdateUsernameAsync(organizationId, usernameId, usernameUpdateDto);
+			if (username == null)
+			{
+				return NotFound(new { message = $"Username with ID {usernameId} not found for organization {organizationId}" });
+			}
+			return Ok(username);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred while updating username {UsernameId} for organization {OrganizationId}", usernameId, organizationId);
+			return BadRequest(new { message = ex.Message });
+		}
+	}
+
+	/// <summary>
+	/// Delete organization username
+	/// </summary>
+	/// <param name="organizationId">Organization ID</param>
+	/// <param name="usernameId">Username ID</param>
+	/// <returns>No content on success</returns>
+	[HttpDelete("usernames/delete/{organizationId}/{usernameId}")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> DeleteUsername(Guid organizationId, Guid usernameId)
+	{
+		try
+		{
+			var result = await _organizationService.DeleteUsernameAsync(organizationId, usernameId);
+			if (!result)
+			{
+				return NotFound(new { message = $"Username with ID {usernameId} not found for organization {organizationId}" });
+			}
+			return NoContent();
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred while deleting username {UsernameId} from organization {OrganizationId}", usernameId, organizationId);
+			return BadRequest(new { message = ex.Message });
+		}
+	}
+
+	#endregion
 }

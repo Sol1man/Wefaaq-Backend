@@ -8,14 +8,19 @@ public class OrganizationDto
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool CardExpiringSoon { get; set; }
-    public Guid ClientId { get; set; }
-    public string Client { get; set; } = string.Empty;
+    public Guid? ClientId { get; set; }
+    public string? Client { get; set; }
+    public Guid? ClientBranchId { get; set; }
+    public string? ClientBranch { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public List<OrganizationRecordDto> Records { get; set; } = new();
     public List<OrganizationLicenseDto> Licenses { get; set; } = new();
     public List<OrganizationWorkerDto> Workers { get; set; } = new();
     public List<OrganizationCarDto> Cars { get; set; } = new();
+    public List<OrganizationUsernameDto> Usernames { get; set; } = new();
 }
 
 /// <summary>
@@ -25,7 +30,8 @@ public class OrganizationCreateDto
 {
     public string Name { get; set; } = string.Empty;
     public bool CardExpiringSoon { get; set; }
-    public Guid ClientId { get; set; }
+    public Guid? ClientId { get; set; }
+    public Guid? ClientBranchId { get; set; }
 }
 
 /// <summary>
@@ -35,7 +41,8 @@ public class OrganizationUpdateDto
 {
     public string Name { get; set; } = string.Empty;
     public bool CardExpiringSoon { get; set; }
-    public Guid ClientId { get; set; }
+    public Guid? ClientId { get; set; }
+    public Guid? ClientBranchId { get; set; }
 }
 
 /// <summary>
@@ -48,6 +55,8 @@ public class OrganizationRecordDto
     public DateTime ExpiryDate { get; set; }
     public string? ImagePath { get; set; }
     public Guid OrganizationId { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -82,6 +91,8 @@ public class OrganizationLicenseDto
     public DateTime ExpiryDate { get; set; }
     public string? ImagePath { get; set; }
     public Guid OrganizationId { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -117,6 +128,8 @@ public class OrganizationWorkerDto
     public string? ResidenceImagePath { get; set; }
     public DateTime ExpiryDate { get; set; }
     public Guid OrganizationId { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -155,6 +168,8 @@ public class OrganizationCarDto
     public string? ImagePath { get; set; }
     public DateTime OperatingCardExpiry { get; set; }
     public Guid OrganizationId { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

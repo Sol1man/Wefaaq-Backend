@@ -106,4 +106,30 @@ public interface IOrganizationService
     /// <param name="workerId">Worker ID</param>
     /// <returns>True if deleted, false if not found</returns>
     Task<bool> DeleteWorkerAsync(Guid organizationId, Guid workerId);
+
+    // Organization Usernames
+    /// <summary>
+    /// Add username to organization
+    /// </summary>
+    /// <param name="organizationId">Organization ID</param>
+    /// <param name="usernameCreateDto">Username creation data</param>
+    /// <returns>Created username DTO</returns>
+    Task<OrganizationUsernameDto> AddUsernameAsync(Guid organizationId, OrganizationUsernameCreateDto usernameCreateDto);
+
+    /// <summary>
+    /// Update organization username
+    /// </summary>
+    /// <param name="organizationId">Organization ID</param>
+    /// <param name="usernameId">Username ID</param>
+    /// <param name="usernameUpdateDto">Username update data</param>
+    /// <returns>Updated username DTO or null</returns>
+    Task<OrganizationUsernameDto?> UpdateUsernameAsync(Guid organizationId, Guid usernameId, OrganizationUsernameUpdateDto usernameUpdateDto);
+
+    /// <summary>
+    /// Delete organization username
+    /// </summary>
+    /// <param name="organizationId">Organization ID</param>
+    /// <param name="usernameId">Username ID</param>
+    /// <returns>True if deleted, false if not found</returns>
+    Task<bool> DeleteUsernameAsync(Guid organizationId, Guid usernameId);
 }

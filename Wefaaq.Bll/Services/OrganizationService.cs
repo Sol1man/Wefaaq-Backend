@@ -52,12 +52,26 @@ public class OrganizationService : IOrganizationService
             throw new ValidationException(validationResult.Errors);
         }
 
-        // Verify client exists
-        var client = await _clientRepository.GetByIdAsync(organizationCreateDto.ClientId);
-        if (client == null)
+        // Verify exactly one of ClientId or ClientBranchId is set
+        if (!organizationCreateDto.ClientId.HasValue && !organizationCreateDto.ClientBranchId.HasValue)
         {
-            throw new InvalidOperationException($"Client with ID {organizationCreateDto.ClientId} not found");
+            throw new InvalidOperationException("Organization must belong to either a Client or a ClientBranch");
         }
+        if (organizationCreateDto.ClientId.HasValue && organizationCreateDto.ClientBranchId.HasValue)
+        {
+            throw new InvalidOperationException("Organization cannot belong to both a Client and a ClientBranch");
+        }
+
+        // Verify client or branch exists
+        if (organizationCreateDto.ClientId.HasValue)
+        {
+            var client = await _clientRepository.GetByIdAsync(organizationCreateDto.ClientId.Value);
+            if (client == null)
+            {
+                throw new InvalidOperationException($"Client with ID {organizationCreateDto.ClientId} not found");
+            }
+        }
+        // Note: ClientBranch verification would go here when ClientBranchRepository is available
 
         var organization = _mapper.Map<Organization>(organizationCreateDto);
         organization.Id = Guid.NewGuid();
@@ -80,12 +94,26 @@ public class OrganizationService : IOrganizationService
             return null;
         }
 
-        // Verify client exists
-        var client = await _clientRepository.GetByIdAsync(organizationUpdateDto.ClientId);
-        if (client == null)
+        // Verify exactly one of ClientId or ClientBranchId is set
+        if (!organizationUpdateDto.ClientId.HasValue && !organizationUpdateDto.ClientBranchId.HasValue)
         {
-            throw new InvalidOperationException($"Client with ID {organizationUpdateDto.ClientId} not found");
+            throw new InvalidOperationException("Organization must belong to either a Client or a ClientBranch");
         }
+        if (organizationUpdateDto.ClientId.HasValue && organizationUpdateDto.ClientBranchId.HasValue)
+        {
+            throw new InvalidOperationException("Organization cannot belong to both a Client and a ClientBranch");
+        }
+
+        // Verify client or branch exists
+        if (organizationUpdateDto.ClientId.HasValue)
+        {
+            var client = await _clientRepository.GetByIdAsync(organizationUpdateDto.ClientId.Value);
+            if (client == null)
+            {
+                throw new InvalidOperationException($"Client with ID {organizationUpdateDto.ClientId} not found");
+            }
+        }
+        // Note: ClientBranch verification would go here when ClientBranchRepository is available
 
         _mapper.Map(organizationUpdateDto, existingOrganization);
 
@@ -141,5 +169,20 @@ public class OrganizationService : IOrganizationService
     public async Task<bool> DeleteWorkerAsync(Guid organizationId, Guid workerId)
     {
         throw new NotImplementedException("Worker operations to be implemented in full version");
+    }
+
+    public async Task<OrganizationUsernameDto> AddUsernameAsync(Guid organizationId, OrganizationUsernameCreateDto usernameCreateDto)
+    {
+        throw new NotImplementedException("Username operations to be implemented in full version");
+    }
+
+    public async Task<OrganizationUsernameDto?> UpdateUsernameAsync(Guid organizationId, Guid usernameId, OrganizationUsernameUpdateDto usernameUpdateDto)
+    {
+        throw new NotImplementedException("Username operations to be implemented in full version");
+    }
+
+    public async Task<bool> DeleteUsernameAsync(Guid organizationId, Guid usernameId)
+    {
+        throw new NotImplementedException("Username operations to be implemented in full version");
     }
 }

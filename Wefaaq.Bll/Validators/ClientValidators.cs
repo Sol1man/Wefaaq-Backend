@@ -28,8 +28,6 @@ public class ClientCreateDtoValidator : AbstractValidator<ClientCreateDto>
         RuleFor(x => x.Classification)
             .IsInEnum().WithMessage("Invalid client classification");
 
-        RuleFor(x => x.ExternalWorkersCount)
-            .GreaterThanOrEqualTo(0).WithMessage("External workers count cannot be negative");
     }
 }
 
@@ -57,8 +55,6 @@ public class ClientUpdateDtoValidator : AbstractValidator<ClientUpdateDto>
         RuleFor(x => x.Classification)
             .IsInEnum().WithMessage("Invalid client classification");
 
-        RuleFor(x => x.ExternalWorkersCount)
-            .GreaterThanOrEqualTo(0).WithMessage("External workers count cannot be negative");
     }
 }
 
@@ -86,8 +82,6 @@ public class ClientWithOrganizationsCreateDtoValidator : AbstractValidator<Clien
         RuleFor(x => x.Classification)
             .IsInEnum().WithMessage("Invalid client classification");
 
-        RuleFor(x => x.ExternalWorkersCount)
-            .GreaterThanOrEqualTo(0).WithMessage("External workers count cannot be negative");
 
         RuleFor(x => x.Organizations)
             .NotNull().WithMessage("Organizations list cannot be null");
@@ -187,8 +181,6 @@ public class ClientWithOrganizationsUpdateDtoValidator : AbstractValidator<Clien
         RuleFor(x => x.Classification)
             .IsInEnum().WithMessage("Invalid client classification");
 
-        RuleFor(x => x.ExternalWorkersCount)
-            .GreaterThanOrEqualTo(0).WithMessage("External workers count cannot be negative");
 
         RuleFor(x => x.Organizations)
             .NotNull().WithMessage("Organizations list cannot be null");
