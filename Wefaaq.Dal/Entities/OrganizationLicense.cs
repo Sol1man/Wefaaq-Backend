@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Wefaaq.Dal.Interfaces;
 
 namespace Wefaaq.Dal.Entities;
 
 /// <summary>
 /// Organization license entity (ترخيص المؤسسة)
 /// </summary>
-public class OrganizationLicense
+public class OrganizationLicense : ISoftDeletable
 {
     /// <summary>
     /// Unique identifier
@@ -49,4 +50,14 @@ public class OrganizationLicense
     /// Last update timestamp
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Indicates if the entity is soft deleted
+    /// </summary>
+    public bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// Timestamp when the entity was soft deleted
+    /// </summary>
+    public DateTime? DeletedAt { get; set; }
 }

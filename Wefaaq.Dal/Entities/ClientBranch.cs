@@ -4,9 +4,10 @@ using Wefaaq.Dal.Interfaces;
 namespace Wefaaq.Dal.Entities;
 
 /// <summary>
-/// Client entity (العميل)
+/// Client branch entity (فرع العميل)
+/// Represents a branch or subsidiary of a main client
 /// </summary>
-public class Client : ISoftDeletable
+public class ClientBranch : ISoftDeletable
 {
     /// <summary>
     /// Unique identifier
@@ -14,36 +15,52 @@ public class Client : ISoftDeletable
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Client name (أسم)
+    /// Branch name (أسم الفرع)
     /// </summary>
     [Required]
     [MaxLength(255)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Client email (ايميل)
+    /// Branch email (ايميل)
     /// </summary>
-    [Required]
     [EmailAddress]
     [MaxLength(255)]
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
 
     /// <summary>
-    /// Client phone number (رقم)
+    /// Branch phone number (رقم)
     /// </summary>
     [MaxLength(20)]
     public string? PhoneNumber { get; set; }
 
     /// <summary>
-    /// Client classification (تصنيف العميل)
+    /// Branch classification (تصنيف الفرع)
     /// </summary>
     public ClientClassification Classification { get; set; }
 
     /// <summary>
-    /// Client balance (رصيد) - negative = مدين (debtor), positive = دائن (creditor)
+    /// Branch balance (رصيد) - negative = مدين (debtor), positive = دائن (creditor)
     /// </summary>
     [Range(-999999999.99, 999999999.99)]
     public decimal Balance { get; set; }
+
+    /// <summary>
+    /// Branch type descriptor (نوع الفرع)
+    /// e.g., "Sister", "Subsidiary", "Sister Company", etc.
+    /// </summary>
+    [MaxLength(100)]
+    public string? BranchType { get; set; }
+
+    /// <summary>
+    /// Parent client identifier (foreign key)
+    /// </summary>
+    public Guid ParentClientId { get; set; }
+
+    /// <summary>
+    /// Navigation property to parent Client
+    /// </summary>
+    public virtual Client ParentClient { get; set; } = null!;
 
     /// <summary>
     /// Creation timestamp
@@ -74,9 +91,4 @@ public class Client : ISoftDeletable
     /// One-to-many relationship with external workers
     /// </summary>
     public virtual ICollection<ExternalWorker> ExternalWorkers { get; set; } = new List<ExternalWorker>();
-
-    /// <summary>
-    /// One-to-many relationship with client branches
-    /// </summary>
-    public virtual ICollection<ClientBranch> ClientBranches { get; set; } = new List<ClientBranch>();
 }

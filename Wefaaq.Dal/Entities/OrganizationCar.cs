@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Wefaaq.Dal.Interfaces;
 
 namespace Wefaaq.Dal.Entities;
 
 /// <summary>
 /// Organization car entity (سيارة المؤسسة)
 /// </summary>
-public class OrganizationCar
+public class OrganizationCar : ISoftDeletable
 {
     /// <summary>
     /// Unique identifier
@@ -63,4 +64,14 @@ public class OrganizationCar
     /// Last update timestamp
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Indicates if the entity is soft deleted
+    /// </summary>
+    public bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// Timestamp when the entity was soft deleted
+    /// </summary>
+    public DateTime? DeletedAt { get; set; }
 }

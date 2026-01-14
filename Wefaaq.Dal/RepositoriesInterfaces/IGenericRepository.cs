@@ -55,4 +55,27 @@ public interface IGenericRepository<T> where T : class
     /// <param name="entity">Entity to delete</param>
     /// <returns>True if deleted</returns>
     Task<bool> DeleteAsync(T entity);
+
+    /// <summary>
+    /// Permanently delete entity by ID (hard delete), bypassing soft delete
+    /// Use with caution - this cannot be undone!
+    /// </summary>
+    /// <param name="id">Entity ID</param>
+    /// <returns>True if deleted, false if not found</returns>
+    Task<bool> HardDeleteAsync(Guid id);
+
+    /// <summary>
+    /// Permanently delete entity (hard delete), bypassing soft delete
+    /// Use with caution - this cannot be undone!
+    /// </summary>
+    /// <param name="entity">Entity to delete</param>
+    /// <returns>True if deleted</returns>
+    Task<bool> HardDeleteAsync(T entity);
+
+    /// <summary>
+    /// Restore a soft-deleted entity
+    /// </summary>
+    /// <param name="id">Entity ID</param>
+    /// <returns>True if restored, false if not found or not soft-deleted</returns>
+    Task<bool> RestoreAsync(Guid id);
 }

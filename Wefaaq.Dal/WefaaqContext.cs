@@ -47,6 +47,21 @@ public class WefaaqContext : DbContext
     /// </summary>
     public DbSet<User> Users { get; set; }
 
+    /// <summary>
+    /// External workers table (عمال خارجيين)
+    /// </summary>
+    public DbSet<ExternalWorker> ExternalWorkers { get; set; }
+
+    /// <summary>
+    /// Organization usernames table (اسماء المستخدمين للمؤسسات)
+    /// </summary>
+    public DbSet<OrganizationUsername> OrganizationUsernames { get; set; }
+
+    /// <summary>
+    /// Client branches table (فروع العملاء)
+    /// </summary>
+    public DbSet<ClientBranch> ClientBranches { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -65,6 +80,9 @@ public class WefaaqContext : DbContext
 
             // Index for email uniqueness
             entity.HasIndex(e => e.Email).IsUnique();
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
 
         // Configure Organization entity with one-to-many relationship to Client
@@ -76,11 +94,32 @@ public class WefaaqContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 
-            // One-to-many relationship: Client has many Organizations
+            // One-to-many relationship: Client has many Organizations (nullable)
+            // Using NoAction to avoid cascade cycle: Client -> ClientBranch -> Organizations
             entity.HasOne(e => e.Client)
                 .WithMany(e => e.Organizations)
                 .HasForeignKey(e => e.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // One-to-many relationship: ClientBranch has many Organizations (nullable)
+            entity.HasOne(e => e.ClientBranch)
+                .WithMany(e => e.Organizations)
+                .HasForeignKey(e => e.ClientBranchId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // CHECK constraint: must have either ClientId OR ClientBranchId (not both, not neither)
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_Organization_Client_XOR_Branch",
+                "([ClientId] IS NOT NULL AND [ClientBranchId] IS NULL) OR ([ClientId] IS NULL AND [ClientBranchId] IS NOT NULL)"
+            ));
+
+            // Add index for ClientBranchId
+            entity.HasIndex(e => e.ClientBranchId);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
 
         // Configure OrganizationRecord entity
@@ -97,6 +136,9 @@ public class WefaaqContext : DbContext
                 .WithMany(e => e.Records)
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
 
         // Configure OrganizationLicense entity
@@ -113,6 +155,9 @@ public class WefaaqContext : DbContext
                 .WithMany(e => e.Licenses)
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
 
         // Configure OrganizationWorker entity
@@ -130,6 +175,9 @@ public class WefaaqContext : DbContext
                 .WithMany(e => e.Workers)
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
 
         // Configure OrganizationCar entity
@@ -148,6 +196,9 @@ public class WefaaqContext : DbContext
                 .WithMany(e => e.Cars)
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
 
         // Configure User entity
@@ -173,6 +224,101 @@ public class WefaaqContext : DbContext
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .IsRequired(false);
+        });
+
+        // Configure ExternalWorker entity
+        modelBuilder.Entity<ExternalWorker>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.ResidenceNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ResidenceImagePath).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Relationship to Client (nullable)
+            // Using NoAction to avoid cascade cycle: Client -> ClientBranch -> ExternalWorkers
+            entity.HasOne(e => e.Client)
+                .WithMany(e => e.ExternalWorkers)
+                .HasForeignKey(e => e.ClientId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // Relationship to ClientBranch (nullable)
+            entity.HasOne(e => e.ClientBranch)
+                .WithMany(e => e.ExternalWorkers)
+                .HasForeignKey(e => e.ClientBranchId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // CHECK constraint: must have either ClientId OR ClientBranchId (not both, not neither)
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_ExternalWorker_Client_XOR_Branch",
+                "([ClientId] IS NOT NULL AND [ClientBranchId] IS NULL) OR ([ClientId] IS NULL AND [ClientBranchId] IS NOT NULL)"
+            ));
+
+            // Indexes
+            entity.HasIndex(e => e.ClientId);
+            entity.HasIndex(e => e.ClientBranchId);
+            entity.HasIndex(e => e.ResidenceNumber);
+            entity.HasIndex(e => e.ExpiryDate);
+            entity.HasIndex(e => e.WorkerType);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // Configure OrganizationUsername entity
+        modelBuilder.Entity<OrganizationUsername>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.SiteName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Username).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Password).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasOne(e => e.Organization)
+                .WithMany(e => e.Usernames)
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            entity.HasIndex(e => e.OrganizationId);
+            entity.HasIndex(e => e.SiteName);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // Configure ClientBranch entity
+        modelBuilder.Entity<ClientBranch>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+            entity.Property(e => e.Balance).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.BranchType).HasMaxLength(100);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Relationship to parent Client
+            entity.HasOne(e => e.ParentClient)
+                .WithMany(e => e.ClientBranches)
+                .HasForeignKey(e => e.ParentClientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            entity.HasIndex(e => e.ParentClientId);
+            entity.HasIndex(e => e.Name);
+            entity.HasIndex(e => e.Classification);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
     }
 
@@ -237,6 +383,24 @@ public class WefaaqContext : DbContext
                 if (entry.State == EntityState.Added)
                     user.CreatedAt = DateTime.UtcNow;
                 user.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is ExternalWorker externalWorker)
+            {
+                if (entry.State == EntityState.Added)
+                    externalWorker.CreatedAt = DateTime.UtcNow;
+                externalWorker.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is OrganizationUsername username)
+            {
+                if (entry.State == EntityState.Added)
+                    username.CreatedAt = DateTime.UtcNow;
+                username.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is ClientBranch branch)
+            {
+                if (entry.State == EntityState.Added)
+                    branch.CreatedAt = DateTime.UtcNow;
+                branch.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

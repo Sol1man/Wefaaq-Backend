@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Wefaaq.Dal.Interfaces;
 using Wefaaq.Dal.RepositoriesInterfaces;
 
 namespace Wefaaq.Dal.Repositories;
@@ -59,8 +60,69 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     public virtual async Task<bool> DeleteAsync(T entity)
     {
+        // Check if entity supports soft delete
+        if (entity is ISoftDeletable softDeletable)
+        {
+            // Soft delete: mark as deleted
+            softDeletable.IsDeleted = true;
+            softDeletable.DeletedAt = DateTime.UtcNow;
+            DbSet.Update(entity);
+        }
+        else
+        {
+            // Hard delete: physically remove from database
+            DbSet.Remove(entity);
+        }
+
+        await Context.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Permanently delete an entity (hard delete), bypassing soft delete
+    /// Use with caution - this cannot be undone!
+    /// </summary>
+    public virtual async Task<bool> HardDeleteAsync(Guid id)
+    {
+        var entity = await GetByIdAsync(id);
+        if (entity == null)
+            return false;
+
+        return await HardDeleteAsync(entity);
+    }
+
+    /// <summary>
+    /// Permanently delete an entity (hard delete), bypassing soft delete
+    /// Use with caution - this cannot be undone!
+    /// </summary>
+    public virtual async Task<bool> HardDeleteAsync(T entity)
+    {
         DbSet.Remove(entity);
         await Context.SaveChangesAsync();
         return true;
+    }
+
+    /// <summary>
+    /// Restore a soft-deleted entity
+    /// </summary>
+    public virtual async Task<bool> RestoreAsync(Guid id)
+    {
+        // Need to query with IgnoreQueryFilters to find soft-deleted entities
+        var entity = await DbSet.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
+
+        if (entity == null)
+            return false;
+
+        if (entity is ISoftDeletable softDeletable && softDeletable.IsDeleted)
+        {
+            softDeletable.IsDeleted = false;
+            softDeletable.DeletedAt = null;
+            DbSet.Update(entity);
+            await Context.SaveChangesAsync();
+            return true;
+        }
+
+        return false;
     }
 }

@@ -6,7 +6,9 @@
       "Bash(dir \"D:\\Wefaaq Project\\Wefaaq Backend\\Wefaaq.Bll\\Validators\" /b)",
       "Bash(dir \"D:\\Wefaaq Project\\Wefaaq Backend\" /b)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

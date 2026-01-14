@@ -174,8 +174,7 @@ public class ClientService : IClientService
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
             Classification = dto.Classification,
-            Balance = dto.Balance,
-            ExternalWorkersCount = dto.ExternalWorkersCount
+            Balance = dto.Balance
         };
 
         // Create organizations and associate them with the client
@@ -290,7 +289,6 @@ public class ClientService : IClientService
         existingClient.PhoneNumber = dto.PhoneNumber;
         existingClient.Classification = dto.Classification;
         existingClient.Balance = dto.Balance;
-        existingClient.ExternalWorkersCount = dto.ExternalWorkersCount;
 
         // Remove all existing organizations
         if (existingClient.Organizations.Any())

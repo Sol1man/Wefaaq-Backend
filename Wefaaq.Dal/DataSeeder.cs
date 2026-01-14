@@ -45,7 +45,6 @@ public static class DataSeeder
                     PhoneNumber = "+1234567890",
                     Classification = ClientClassification.Mumayyaz,
                     Balance = 15000.50m,
-                    ExternalWorkersCount = 25,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
@@ -57,7 +56,6 @@ public static class DataSeeder
                     PhoneNumber = "+9876543210",
                     Classification = ClientClassification.Aadi,
                     Balance = 8500.00m,
-                    ExternalWorkersCount = 12,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
@@ -69,7 +67,6 @@ public static class DataSeeder
                     PhoneNumber = "+1122334455",
                     Classification = ClientClassification.Mahwari,
                     Balance = 22000.75m,
-                    ExternalWorkersCount = 45,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
@@ -81,7 +78,6 @@ public static class DataSeeder
                     PhoneNumber = "+5544332211",
                     Classification = ClientClassification.Aadi,
                     Balance = 5200.00m,
-                    ExternalWorkersCount = 8,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
@@ -93,7 +89,6 @@ public static class DataSeeder
                     PhoneNumber = "+9988776655",
                     Classification = ClientClassification.Mumayyaz,
                     Balance = 18500.25m,
-                    ExternalWorkersCount = 32,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 }

@@ -4,9 +4,10 @@ using Wefaaq.Dal.Interfaces;
 namespace Wefaaq.Dal.Entities;
 
 /// <summary>
-/// Organization worker entity (عامل المؤسسة)
+/// External worker entity (عامل خارجي)
+/// Workers employed directly by clients, not through organizations
 /// </summary>
-public class OrganizationWorker : ISoftDeletable
+public class ExternalWorker : ISoftDeletable
 {
     /// <summary>
     /// Unique identifier
@@ -39,14 +40,29 @@ public class OrganizationWorker : ISoftDeletable
     public DateTime ExpiryDate { get; set; }
 
     /// <summary>
-    /// Organization identifier (foreign key)
+    /// Worker type classification (نوع العامل)
     /// </summary>
-    public Guid OrganizationId { get; set; }
+    public WorkerType WorkerType { get; set; }
 
     /// <summary>
-    /// Navigation property to Organization
+    /// Client identifier (foreign key to main client)
     /// </summary>
-    public virtual Organization Organization { get; set; } = null!;
+    public Guid? ClientId { get; set; }
+
+    /// <summary>
+    /// Navigation property to Client
+    /// </summary>
+    public virtual Client? Client { get; set; }
+
+    /// <summary>
+    /// Client branch identifier (foreign key to client branch)
+    /// </summary>
+    public Guid? ClientBranchId { get; set; }
+
+    /// <summary>
+    /// Navigation property to ClientBranch
+    /// </summary>
+    public virtual ClientBranch? ClientBranch { get; set; }
 
     /// <summary>
     /// Creation timestamp

@@ -4,9 +4,10 @@ using Wefaaq.Dal.Interfaces;
 namespace Wefaaq.Dal.Entities;
 
 /// <summary>
-/// Organization record entity (سجل المؤسسة)
+/// Organization username/credential entity (اسماء المستخدمين للمؤسسة)
+/// Stores website login credentials for organizations
 /// </summary>
-public class OrganizationRecord : ISoftDeletable
+public class OrganizationUsername : ISoftDeletable
 {
     /// <summary>
     /// Unique identifier
@@ -14,22 +15,26 @@ public class OrganizationRecord : ISoftDeletable
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Record number (رقم)
+    /// Website or service name (اسم الموقع)
     /// </summary>
     [Required]
-    [MaxLength(100)]
-    public string Number { get; set; } = string.Empty;
+    [MaxLength(200)]
+    public string SiteName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Record expiry date (تاريخ الانتهاء)
+    /// Login username (اسم المستخدم)
     /// </summary>
-    public DateTime ExpiryDate { get; set; }
+    [Required]
+    [MaxLength(255)]
+    public string Username { get; set; } = string.Empty;
 
     /// <summary>
-    /// Image file path (مسار الصورة)
+    /// Password (كلمة المرور)
+    /// WARNING: Should be encrypted/hashed before storage
     /// </summary>
+    [Required]
     [MaxLength(500)]
-    public string? ImagePath { get; set; }
+    public string Password { get; set; } = string.Empty;
 
     /// <summary>
     /// Organization identifier (foreign key)
