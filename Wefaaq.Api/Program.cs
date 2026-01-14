@@ -159,8 +159,11 @@ if (app.Environment.IsDevelopment())
     }
 }
 
-// Railway port configuration
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Urls.Add($"http://0.0.0.0:{port}");
+// Railway port configuration (only in production)
+if (!app.Environment.IsDevelopment())
+{
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+    app.Urls.Add($"http://0.0.0.0:{port}");
+}
 
 app.Run();
