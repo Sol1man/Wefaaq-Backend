@@ -163,10 +163,10 @@ public class ClientController : ControllerBase
     #region Client with Organizations
 
     /// <summary>
-    /// Get client with organizations
+    /// Get client with all related data (organizations, branches, external workers)
     /// </summary>
     /// <param name="id">Client ID</param>
-    /// <returns>Client with organizations</returns>
+    /// <returns>Client with organizations, branches, and external workers</returns>
     [HttpGet("organizations/{id}")]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -254,5 +254,220 @@ public static class DataSeeder
             context.OrganizationCars.AddRange(cars);
             context.SaveChanges();
         }
+
+        // Seed Client with Branches, and Branches with Organizations and External Workers
+        if (!context.ClientBranches.Any())
+        {
+            var clientsList = context.Clients.ToList();
+            if (clientsList.Count < 1)
+            {
+                return; // Need at least one client
+            }
+
+            // Create a client with branches
+            var mainClient = clientsList[0]; // Using "Acme Corporation"
+
+            // Create Client Branches
+            var branches = new List<ClientBranch>
+            {
+                new ClientBranch
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Acme Riyadh Branch",
+                    Email = "riyadh@acme.com",
+                    PhoneNumber = "+966112345678",
+                    Classification = ClientClassification.Mumayyaz,
+                    Balance = 8500.00m,
+                    ParentClientId = mainClient.Id,
+                    BranchType = "Regional Office",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new ClientBranch
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Acme Jeddah Branch",
+                    Email = "jeddah@acme.com",
+                    PhoneNumber = "+966122345678",
+                    Classification = ClientClassification.Aadi,
+                    Balance = 5200.00m,
+                    ParentClientId = mainClient.Id,
+                    BranchType = "Regional Office",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+
+            context.ClientBranches.AddRange(branches);
+            context.SaveChanges();
+
+            var riyadhBranch = branches[0];
+            var jeddahBranch = branches[1];
+
+            // Create Organizations for the Riyadh Branch
+            var branchOrganizations = new List<Organization>
+            {
+                new Organization
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Riyadh Cleaning Services",
+                    CardExpiringSoon = false,
+                    ClientId = null, // Organization belongs to branch, not direct client
+                    ClientBranchId = riyadhBranch.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new Organization
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Riyadh Security Solutions",
+                    CardExpiringSoon = true,
+                    ClientId = null,
+                    ClientBranchId = riyadhBranch.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new Organization
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Jeddah Maintenance Co",
+                    CardExpiringSoon = false,
+                    ClientId = null,
+                    ClientBranchId = jeddahBranch.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+
+            context.Organizations.AddRange(branchOrganizations);
+            context.SaveChanges();
+
+            // Add Organization Usernames to branch organizations
+            var orgUsernames = new List<OrganizationUsername>
+            {
+                new OrganizationUsername
+                {
+                    Id = Guid.NewGuid(),
+                    SiteName = "Qiwa Portal",
+                    Username = "riyadh_cleaning",
+                    Password = "secure_password_123",
+                    OrganizationId = branchOrganizations[0].Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new OrganizationUsername
+                {
+                    Id = Guid.NewGuid(),
+                    SiteName = "Muqeem Platform",
+                    Username = "riyadh_security",
+                    Password = "secure_password_456",
+                    OrganizationId = branchOrganizations[1].Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new OrganizationUsername
+                {
+                    Id = Guid.NewGuid(),
+                    SiteName = "Balady Portal",
+                    Username = "jeddah_maintenance",
+                    Password = "secure_password_789",
+                    OrganizationId = branchOrganizations[2].Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+
+            context.OrganizationUsernames.AddRange(orgUsernames);
+            context.SaveChanges();
+
+            // Create External Workers for branches
+            var externalWorkers = new List<ExternalWorker>
+            {
+                // Workers for Riyadh Branch
+                new ExternalWorker
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Ahmed Mohammed",
+                    WorkerType = WorkerType.HouseholdWorker,
+                    ResidenceNumber = "RES-RYD-001",
+                    ResidenceImagePath = "/images/ahmed_residence.jpg",
+                    ExpiryDate = DateTime.UtcNow.AddYears(1),
+                    ClientId = null,
+                    ClientBranchId = riyadhBranch.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new ExternalWorker
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Fatima Ali",
+                    WorkerType = WorkerType.HomeCook,
+                    ResidenceNumber = "RES-RYD-002",
+                    ResidenceImagePath = "/images/fatima_residence.jpg",
+                    ExpiryDate = DateTime.UtcNow.AddMonths(8),
+                    ClientId = null,
+                    ClientBranchId = riyadhBranch.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new ExternalWorker
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Khalid Hassan",
+                    WorkerType = WorkerType.PrivateDriver,
+                    ResidenceNumber = "RES-RYD-003",
+                    ResidenceImagePath = "/images/khalid_residence.jpg",
+                    ExpiryDate = DateTime.UtcNow.AddMonths(10),
+                    ClientId = null,
+                    ClientBranchId = riyadhBranch.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                // Workers for Jeddah Branch
+                new ExternalWorker
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Salem Abdullah",
+                    WorkerType = WorkerType.Farmer,
+                    ResidenceNumber = "RES-JED-001",
+                    ResidenceImagePath = "/images/salem_residence.jpg",
+                    ExpiryDate = DateTime.UtcNow.AddMonths(6),
+                    ClientId = null,
+                    ClientBranchId = jeddahBranch.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new ExternalWorker
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Nasser Ibrahim",
+                    WorkerType = WorkerType.Shepherd,
+                    ResidenceNumber = "RES-JED-002",
+                    ResidenceImagePath = "/images/nasser_residence.jpg",
+                    ExpiryDate = DateTime.UtcNow.AddMonths(9),
+                    ClientId = null,
+                    ClientBranchId = jeddahBranch.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                // Worker directly under main client (not branch)
+                new ExternalWorker
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Omar Yousef",
+                    WorkerType = WorkerType.Beekeeper,
+                    ResidenceNumber = "RES-MAIN-001",
+                    ResidenceImagePath = "/images/omar_residence.jpg",
+                    ExpiryDate = DateTime.UtcNow.AddYears(2),
+                    ClientId = mainClient.Id,
+                    ClientBranchId = null,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+
+            context.ExternalWorkers.AddRange(externalWorkers);
+            context.SaveChanges();
+        }
     }
 }

@@ -16,6 +16,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     public async Task<Client?> GetWithOrganizationsAsync(Guid id)
     {
         return await DbSet
+            // Include direct organizations and their nested entities
             .Include(c => c.Organizations)
                 .ThenInclude(o => o.Records)
             .Include(c => c.Organizations)
@@ -24,6 +25,28 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
                 .ThenInclude(o => o.Workers)
             .Include(c => c.Organizations)
                 .ThenInclude(o => o.Cars)
+            .Include(c => c.Organizations)
+                .ThenInclude(o => o.Usernames)
+            // Include client branches and their nested entities
+            .Include(c => c.ClientBranches)
+                .ThenInclude(cb => cb.Organizations)
+                    .ThenInclude(o => o.Records)
+            .Include(c => c.ClientBranches)
+                .ThenInclude(cb => cb.Organizations)
+                    .ThenInclude(o => o.Licenses)
+            .Include(c => c.ClientBranches)
+                .ThenInclude(cb => cb.Organizations)
+                    .ThenInclude(o => o.Workers)
+            .Include(c => c.ClientBranches)
+                .ThenInclude(cb => cb.Organizations)
+                    .ThenInclude(o => o.Cars)
+            .Include(c => c.ClientBranches)
+                .ThenInclude(cb => cb.Organizations)
+                    .ThenInclude(o => o.Usernames)
+            .Include(c => c.ClientBranches)
+                .ThenInclude(cb => cb.ExternalWorkers)
+            // Include direct external workers
+            .Include(c => c.ExternalWorkers)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
