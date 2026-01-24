@@ -296,4 +296,160 @@ public class ClientController : ControllerBase
     }
 
     #endregion
+
+    #region Bulk Operations (Create/Edit with all details)
+
+    /// <summary>
+    /// Create new client with all details (organizations, branches, external workers)
+    /// </summary>
+    [HttpPost("add-with-details")]
+    [ProducesResponseType(typeof(ClientDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateWithDetails([FromBody] ClientWithDetailsCreateDto dto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var client = await _clientService.AddClientWithDetailsAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = client.Id }, client);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating client with details");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update existing client with all details (organizations, branches, external workers)
+    /// </summary>
+    [HttpPut("edit-with-details/{id}")]
+    [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateWithDetails(Guid id, [FromBody] ClientWithDetailsUpdateDto dto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var client = await _clientService.EditClientWithDetailsAsync(id, dto);
+            if (client == null)
+            {
+                return NotFound(new { message = $"Client with ID {id} not found" });
+            }
+            return Ok(client);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while updating client with details for ID {ClientId}", id);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    #endregion
+
+    #region Granular Operations (Add individual items)
+
+    /// <summary>
+    /// Add organization to existing client
+    /// </summary>
+    [HttpPost("{clientId}/organizations")]
+    [ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddOrganizationToClient(Guid clientId, [FromBody] OrganizationCreateDto organizationDto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var organization = await _clientService.AddOrganizationToClientAsync(clientId, organizationDto);
+            return CreatedAtRoute(null, organization);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding organization to client {ClientId}", clientId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding organization to client {ClientId}", clientId);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add branch to existing client
+    /// </summary>
+    [HttpPost("{clientId}/branches")]
+    [ProducesResponseType(typeof(ClientBranchDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddBranchToClient(Guid clientId, [FromBody] ClientBranchCreateDto branchDto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var branch = await _clientService.AddBranchToClientAsync(clientId, branchDto);
+            return CreatedAtRoute(null, branch);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding branch to client {ClientId}", clientId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding branch to client {ClientId}", clientId);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add external worker to existing client
+    /// </summary>
+    [HttpPost("{clientId}/external-workers")]
+    [ProducesResponseType(typeof(ExternalWorkerDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddExternalWorkerToClient(Guid clientId, [FromBody] ExternalWorkerCreateDto workerDto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var worker = await _clientService.AddExternalWorkerToClientAsync(clientId, workerDto);
+            return CreatedAtRoute(null, worker);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding external worker to client {ClientId}", clientId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding external worker to client {ClientId}", clientId);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    #endregion
 }

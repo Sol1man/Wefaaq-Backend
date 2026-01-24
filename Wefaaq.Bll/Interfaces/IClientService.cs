@@ -75,4 +75,47 @@ public interface IClientService
     /// <param name="dto">Client and organizations update data</param>
     /// <returns>Updated client DTO with organizations or null if not found</returns>
     Task<ClientDto?> EditClientWithOrganizationsAsync(Guid id, ClientWithOrganizationsUpdateDto dto);
+
+    // ===== BULK OPERATIONS (Create/Edit with all details) =====
+
+    /// <summary>
+    /// Create new client with all details (organizations, branches, external workers)
+    /// </summary>
+    /// <param name="dto">Client with all details creation data</param>
+    /// <returns>Created client DTO with all details</returns>
+    Task<ClientDto> AddClientWithDetailsAsync(ClientWithDetailsCreateDto dto);
+
+    /// <summary>
+    /// Update existing client with all details (organizations, branches, external workers)
+    /// </summary>
+    /// <param name="id">Client ID</param>
+    /// <param name="dto">Client with all details update data</param>
+    /// <returns>Updated client DTO with all details or null if not found</returns>
+    Task<ClientDto?> EditClientWithDetailsAsync(Guid id, ClientWithDetailsUpdateDto dto);
+
+    // ===== GRANULAR OPERATIONS (Add individual items to existing client) =====
+
+    /// <summary>
+    /// Add organization to existing client
+    /// </summary>
+    /// <param name="clientId">Client ID</param>
+    /// <param name="organizationDto">Organization creation data</param>
+    /// <returns>Created organization DTO</returns>
+    Task<OrganizationDto> AddOrganizationToClientAsync(Guid clientId, OrganizationCreateDto organizationDto);
+
+    /// <summary>
+    /// Add branch to existing client
+    /// </summary>
+    /// <param name="clientId">Client ID</param>
+    /// <param name="branchDto">Branch creation data</param>
+    /// <returns>Created branch DTO</returns>
+    Task<ClientBranchDto> AddBranchToClientAsync(Guid clientId, ClientBranchCreateDto branchDto);
+
+    /// <summary>
+    /// Add external worker to existing client
+    /// </summary>
+    /// <param name="clientId">Client ID</param>
+    /// <param name="workerDto">External worker creation data</param>
+    /// <returns>Created external worker DTO</returns>
+    Task<ExternalWorkerDto> AddExternalWorkerToClientAsync(Guid clientId, ExternalWorkerCreateDto workerDto);
 }

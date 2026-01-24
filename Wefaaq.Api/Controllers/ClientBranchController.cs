@@ -190,4 +190,66 @@ public class ClientBranchController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Add organization to existing branch
+    /// </summary>
+    [HttpPost("{branchId}/organizations")]
+    [ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddOrganizationToBranch(Guid branchId, [FromBody] OrganizationCreateDto organizationDto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var organization = await _branchService.AddOrganizationToBranchAsync(branchId, organizationDto);
+            return CreatedAtRoute(null, organization);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding organization to branch {BranchId}", branchId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding organization to branch {BranchId}", branchId);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add external worker to existing branch
+    /// </summary>
+    [HttpPost("{branchId}/external-workers")]
+    [ProducesResponseType(typeof(ExternalWorkerDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddExternalWorkerToBranch(Guid branchId, [FromBody] ExternalWorkerCreateDto workerDto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var worker = await _branchService.AddExternalWorkerToBranchAsync(branchId, workerDto);
+            return CreatedAtRoute(null, worker);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding external worker to branch {BranchId}", branchId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding external worker to branch {BranchId}", branchId);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

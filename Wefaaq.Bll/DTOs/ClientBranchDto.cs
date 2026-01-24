@@ -26,6 +26,7 @@ public class ClientBranchDto
 
 /// <summary>
 /// Client Branch DTO for creating new branches
+/// ParentClientId is optional since it can be provided via route parameter
 /// </summary>
 public class ClientBranchCreateDto
 {
@@ -34,7 +35,7 @@ public class ClientBranchCreateDto
     public string? PhoneNumber { get; set; }
     public ClientClassification Classification { get; set; }
     public decimal Balance { get; set; }
-    public Guid ParentClientId { get; set; }
+    public Guid? ParentClientId { get; set; }
     public string? BranchType { get; set; }
 }
 

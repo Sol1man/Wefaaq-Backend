@@ -88,8 +88,14 @@ public class ClientBranchService : IClientBranchService
             throw new ValidationException(validationResult.Errors);
         }
 
+        // ParentClientId is required for standalone branch creation
+        if (!branchCreateDto.ParentClientId.HasValue)
+        {
+            throw new InvalidOperationException("Parent client ID is required when creating a branch directly");
+        }
+
         // Verify parent client exists
-        var parentClient = await _clientRepository.GetByIdAsync(branchCreateDto.ParentClientId);
+        var parentClient = await _clientRepository.GetByIdAsync(branchCreateDto.ParentClientId.Value);
         if (parentClient == null)
         {
             throw new InvalidOperationException($"Parent client with ID {branchCreateDto.ParentClientId} not found");
@@ -97,6 +103,7 @@ public class ClientBranchService : IClientBranchService
 
         var branch = _mapper.Map<ClientBranch>(branchCreateDto);
         branch.Id = Guid.NewGuid();
+        branch.ParentClientId = branchCreateDto.ParentClientId.Value;
 
         var createdBranch = await _branchRepository.AddAsync(branch);
         return _mapper.Map<ClientBranchDto>(createdBranch);
@@ -132,5 +139,60 @@ public class ClientBranchService : IClientBranchService
     public async Task<bool> DeleteAsync(Guid id)
     {
         return await _branchRepository.DeleteAsync(id);
+    }
+
+    // ===== GRANULAR OPERATIONS (Add items to branch) =====
+
+    public async Task<OrganizationDto> AddOrganizationToBranchAsync(Guid branchId, OrganizationCreateDto organizationDto)
+    {
+        // Verify branch exists
+        var branch = await _branchRepository.GetByIdAsync(branchId);
+        if (branch == null)
+        {
+            throw new InvalidOperationException($"Branch with ID {branchId} not found");
+        }
+
+        // Create organization
+        var organization = new Organization
+        {
+            Id = Guid.NewGuid(),
+            Name = organizationDto.Name,
+            CardExpiringSoon = organizationDto.CardExpiringSoon,
+            ClientId = null,  // Belongs to branch, not client
+            ClientBranchId = branchId
+        };
+
+        _context.Organizations.Add(organization);
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<OrganizationDto>(organization);
+    }
+
+    public async Task<ExternalWorkerDto> AddExternalWorkerToBranchAsync(Guid branchId, ExternalWorkerCreateDto workerDto)
+    {
+        // Verify branch exists
+        var branch = await _branchRepository.GetByIdAsync(branchId);
+        if (branch == null)
+        {
+            throw new InvalidOperationException($"Branch with ID {branchId} not found");
+        }
+
+        // Create external worker
+        var worker = new ExternalWorker
+        {
+            Id = Guid.NewGuid(),
+            Name = workerDto.Name,
+            WorkerType = workerDto.WorkerType,
+            ResidenceNumber = workerDto.ResidenceNumber ?? string.Empty,
+            ResidenceImagePath = workerDto.ResidenceImagePath,
+            ExpiryDate = workerDto.ExpiryDate ?? DateTime.UtcNow.AddYears(1), // Default to 1 year from now if not specified
+            ClientId = null,  // Belongs to branch, not client
+            ClientBranchId = branchId
+        };
+
+        _context.ExternalWorkers.Add(worker);
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<ExternalWorkerDto>(worker);
     }
 }

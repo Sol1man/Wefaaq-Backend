@@ -212,6 +212,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ParentClientId, opt => opt.Ignore()) // Set manually in service
             .ForMember(dest => dest.ParentClient, opt => opt.Ignore())
             .ForMember(dest => dest.Organizations, opt => opt.Ignore())
             .ForMember(dest => dest.ExternalWorkers, opt => opt.Ignore());

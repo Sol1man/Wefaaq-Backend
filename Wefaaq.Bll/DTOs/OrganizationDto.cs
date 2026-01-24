@@ -32,6 +32,12 @@ public class OrganizationCreateDto
     public bool CardExpiringSoon { get; set; }
     public Guid? ClientId { get; set; }
     public Guid? ClientBranchId { get; set; }
+
+    // Optional nested entities
+    public List<OrganizationRecordCreateDto>? Records { get; set; }
+    public List<OrganizationLicenseCreateDto>? Licenses { get; set; }
+    public List<OrganizationWorkerCreateDto>? Workers { get; set; }
+    public List<OrganizationCarCreateDto>? Cars { get; set; }
 }
 
 /// <summary>

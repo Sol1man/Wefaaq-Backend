@@ -27,8 +27,11 @@ public class ClientBranchCreateDtoValidator : AbstractValidator<ClientBranchCrea
         RuleFor(x => x.Classification)
             .IsInEnum().WithMessage("Invalid classification");
 
+        // ParentClientId is optional - it can be provided via route parameter
+        // Only validate if provided in body
         RuleFor(x => x.ParentClientId)
-            .NotEmpty().WithMessage("Parent client is required (العميل الأساسي مطلوب)");
+            .NotEqual(Guid.Empty).WithMessage("Parent client ID cannot be empty")
+            .When(x => x.ParentClientId.HasValue);
 
         RuleFor(x => x.BranchType)
             .MaximumLength(100).WithMessage("Branch type cannot exceed 100 characters")

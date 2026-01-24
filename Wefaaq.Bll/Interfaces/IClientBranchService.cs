@@ -41,4 +41,22 @@ public interface IClientBranchService
     /// Delete client branch (soft delete)
     /// </summary>
     Task<bool> DeleteAsync(Guid id);
+
+    // ===== GRANULAR OPERATIONS (Add items to branch) =====
+
+    /// <summary>
+    /// Add organization to existing branch
+    /// </summary>
+    /// <param name="branchId">Branch ID</param>
+    /// <param name="organizationDto">Organization creation data</param>
+    /// <returns>Created organization DTO</returns>
+    Task<OrganizationDto> AddOrganizationToBranchAsync(Guid branchId, OrganizationCreateDto organizationDto);
+
+    /// <summary>
+    /// Add external worker to existing branch
+    /// </summary>
+    /// <param name="branchId">Branch ID</param>
+    /// <param name="workerDto">External worker creation data</param>
+    /// <returns>Created external worker DTO</returns>
+    Task<ExternalWorkerDto> AddExternalWorkerToBranchAsync(Guid branchId, ExternalWorkerCreateDto workerDto);
 }
