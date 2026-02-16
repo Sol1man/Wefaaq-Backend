@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Wefaaq.Dal;
 
@@ -11,9 +12,11 @@ using Wefaaq.Dal;
 namespace Wefaaq.Dal.Migrations
 {
     [DbContext(typeof(WefaaqContext))]
-    partial class WefaaqContextModelSnapshot : ModelSnapshot
+    [Migration("20260207141958_AddRolesTable")]
+    partial class AddRolesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -583,48 +586,6 @@ namespace Wefaaq.Dal.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Wefaaq.Dal.Entities.UserPayment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserPayments");
-                });
-
             modelBuilder.Entity("Wefaaq.Dal.Entities.ClientBranch", b =>
                 {
                     b.HasOne("Wefaaq.Dal.Entities.Client", "ParentClient")
@@ -741,17 +702,6 @@ namespace Wefaaq.Dal.Migrations
                     b.Navigation("Organization");
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("Wefaaq.Dal.Entities.UserPayment", b =>
-                {
-                    b.HasOne("Wefaaq.Dal.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Wefaaq.Dal.Entities.Client", b =>

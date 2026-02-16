@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
@@ -10,6 +11,7 @@ namespace Wefaaq.Api.Controllers;
 [ApiController]
 [Route("api/clients")]
 [Produces("application/json")]
+[Authorize] // Require authentication for all endpoints
 public class ClientController : ControllerBase
 {
     private readonly IClientService _clientService;
@@ -132,14 +134,16 @@ public class ClientController : ControllerBase
     }
 
     /// <summary>
-    /// Delete client
+    /// Delete client (Admin only)
     /// </summary>
     /// <param name="id">Client ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("delete/{id}")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

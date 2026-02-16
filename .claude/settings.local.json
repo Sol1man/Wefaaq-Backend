@@ -9,7 +9,13 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git checkout:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(npm run build:*)",
+      "Bash(dotnet ef database update:*)",
+      "Bash(cd:*)",
+      "Bash(sqlcmd:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

@@ -532,14 +532,7 @@ public class ClientService : IClientService
         {
             foreach (var orgDto in dto.Organizations)
             {
-                var newOrg = new Organization
-                {
-                    Id = Guid.NewGuid(),
-                    Name = orgDto.Name,
-                    CardExpiringSoon = orgDto.CardExpiringSoon,
-                    ClientId = existingClient.Id,
-                    ClientBranchId = null
-                };
+                var newOrg = CreateOrganizationEntityFromUpdate(orgDto, existingClient.Id, null);
                 _context.Organizations.Add(newOrg);
             }
         }
@@ -567,14 +560,7 @@ public class ClientService : IClientService
                 {
                     foreach (var orgDto in branchDto.Organizations)
                     {
-                        var newOrg = new Organization
-                        {
-                            Id = Guid.NewGuid(),
-                            Name = orgDto.Name,
-                            CardExpiringSoon = orgDto.CardExpiringSoon,
-                            ClientId = null,
-                            ClientBranchId = branch.Id
-                        };
+                        var newOrg = CreateOrganizationEntityFromUpdate(orgDto, null, branch.Id);
                         _context.Organizations.Add(newOrg);
                     }
                 }
@@ -782,5 +768,74 @@ public class ClientService : IClientService
             ClientId = clientId,
             ClientBranchId = branchId
         };
+    }
+
+    private Organization CreateOrganizationEntityFromUpdate(OrganizationUpdateDto dto, Guid? clientId, Guid? branchId)
+    {
+        var organization = new Organization
+        {
+            Id = Guid.NewGuid(),
+            Name = dto.Name,
+            CardExpiringSoon = dto.CardExpiringSoon,
+            ClientId = clientId,
+            ClientBranchId = branchId
+        };
+
+        // Create organization records
+        if (dto.Records != null && dto.Records.Any())
+        {
+            organization.Records = dto.Records.Select(recordDto => new OrganizationRecord
+            {
+                Id = Guid.NewGuid(),
+                Number = recordDto.Number,
+                ExpiryDate = recordDto.ExpiryDate,
+                ImagePath = recordDto.ImagePath,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        // Create organization licenses
+        if (dto.Licenses != null && dto.Licenses.Any())
+        {
+            organization.Licenses = dto.Licenses.Select(licenseDto => new OrganizationLicense
+            {
+                Id = Guid.NewGuid(),
+                Number = licenseDto.Number,
+                ExpiryDate = licenseDto.ExpiryDate,
+                ImagePath = licenseDto.ImagePath,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        // Create organization workers
+        if (dto.Workers != null && dto.Workers.Any())
+        {
+            organization.Workers = dto.Workers.Select(workerDto => new OrganizationWorker
+            {
+                Id = Guid.NewGuid(),
+                Name = workerDto.Name,
+                ResidenceNumber = workerDto.ResidenceNumber,
+                ResidenceImagePath = workerDto.ResidenceImagePath,
+                ExpiryDate = workerDto.ExpiryDate,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        // Create organization cars
+        if (dto.Cars != null && dto.Cars.Any())
+        {
+            organization.Cars = dto.Cars.Select(carDto => new OrganizationCar
+            {
+                Id = Guid.NewGuid(),
+                PlateNumber = carDto.PlateNumber,
+                Color = carDto.Color,
+                SerialNumber = carDto.SerialNumber,
+                ImagePath = carDto.ImagePath,
+                OperatingCardExpiry = carDto.OperatingCardExpiry,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        return organization;
     }
 }

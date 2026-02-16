@@ -29,6 +29,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="request">Login request containing Firebase ID token</param>
     /// <returns>Login response with user data</returns>
+    [AllowAnonymous]
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -68,6 +69,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="request">Logout request containing Firebase ID token</param>
     /// <returns>Logout response</returns>
+    [AllowAnonymous]
     [HttpPost("logout")]
     [ProducesResponseType(typeof(LogoutResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

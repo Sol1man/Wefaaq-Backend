@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
@@ -10,6 +11,7 @@ namespace Wefaaq.Api.Controllers;
 [ApiController]
 [Route("api/organizations")]
 [Produces("application/json")]
+[Authorize] // Require authentication for all endpoints
 public class OrganizationController : ControllerBase
 {
 	private readonly IOrganizationService _organizationService;
@@ -180,14 +182,16 @@ public class OrganizationController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete organization
+	/// Delete organization (Admin only)
 	/// </summary>
 	/// <param name="id">Organization ID</param>
 	/// <returns>No content on success</returns>
 	[HttpDelete("delete/{id}")]
+	[Authorize(Policy = "AdminOnly")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	public async Task<IActionResult> Delete(Guid id)
 	{
 		try
@@ -278,15 +282,17 @@ public class OrganizationController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete organization record
+	/// Delete organization record (Admin only)
 	/// </summary>
 	/// <param name="organizationId">Organization ID</param>
 	/// <param name="recordId">Record ID</param>
 	/// <returns>No content on success</returns>
 	[HttpDelete("records/delete/{organizationId}/{recordId}")]
+	[Authorize(Policy = "AdminOnly")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	public async Task<IActionResult> DeleteRecord(Guid organizationId, Guid recordId)
 	{
 		try
@@ -377,15 +383,17 @@ public class OrganizationController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete organization worker
+	/// Delete organization worker (Admin only)
 	/// </summary>
 	/// <param name="organizationId">Organization ID</param>
 	/// <param name="workerId">Worker ID</param>
 	/// <returns>No content on success</returns>
 	[HttpDelete("workers/delete/{organizationId}/{workerId}")]
+	[Authorize(Policy = "AdminOnly")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	public async Task<IActionResult> DeleteWorker(Guid organizationId, Guid workerId)
 	{
 		try
@@ -476,15 +484,17 @@ public class OrganizationController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete organization username
+	/// Delete organization username (Admin only)
 	/// </summary>
 	/// <param name="organizationId">Organization ID</param>
 	/// <param name="usernameId">Username ID</param>
 	/// <returns>No content on success</returns>
 	[HttpDelete("usernames/delete/{organizationId}/{usernameId}")]
+	[Authorize(Policy = "AdminOnly")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	public async Task<IActionResult> DeleteUsername(Guid organizationId, Guid usernameId)
 	{
 		try

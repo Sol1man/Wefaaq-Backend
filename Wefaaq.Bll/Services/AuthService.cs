@@ -55,7 +55,7 @@ public class AuthService(
                     Name = decodedToken.Claims.ContainsKey("name")
                         ? decodedToken.Claims["name"].ToString()
                         : email.Split('@')[0],
-                    Role = "User", // Default role
+                    RoleId = 2, // Default to User role (Id = 2)
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };

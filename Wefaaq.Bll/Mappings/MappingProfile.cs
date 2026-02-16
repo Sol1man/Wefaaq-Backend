@@ -152,9 +152,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
 
         // User mappings
-        CreateMap<User, UserDto>();
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : string.Empty));
         CreateMap<UserDto, User>()
             .ForMember(dest => dest.Organization, opt => opt.Ignore())
+            .ForMember(dest => dest.Role, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         // External Worker mappings
@@ -226,5 +228,28 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ParentClient, opt => opt.Ignore())
             .ForMember(dest => dest.Organizations, opt => opt.Ignore())
             .ForMember(dest => dest.ExternalWorkers, opt => opt.Ignore());
+
+        // User Payment mappings
+        CreateMap<UserPayment, UserPaymentDto>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.Name : string.Empty))
+            .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : string.Empty));
+
+        CreateMap<UserPaymentCreateDto, UserPayment>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.User, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
+
+        CreateMap<UserPaymentUpdateDto, UserPayment>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.User, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
     }
 }

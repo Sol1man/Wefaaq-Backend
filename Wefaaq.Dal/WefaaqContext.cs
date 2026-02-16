@@ -48,6 +48,11 @@ public class WefaaqContext : DbContext
     public DbSet<User> Users { get; set; }
 
     /// <summary>
+    /// Roles table (for authorization)
+    /// </summary>
+    public DbSet<Role> Roles { get; set; }
+
+    /// <summary>
     /// External workers table (عمال خارجيين)
     /// </summary>
     public DbSet<ExternalWorker> ExternalWorkers { get; set; }
@@ -61,6 +66,11 @@ public class WefaaqContext : DbContext
     /// Client branches table (فروع العملاء)
     /// </summary>
     public DbSet<ClientBranch> ClientBranches { get; set; }
+
+    /// <summary>
+    /// User payments table (مدفوعات المستخدمين)
+    /// </summary>
+    public DbSet<UserPayment> UserPayments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -201,6 +211,24 @@ public class WefaaqContext : DbContext
             entity.HasQueryFilter(e => !e.IsDeleted);
         });
 
+        // Configure Role entity
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(255);
+
+            // Index for Name (unique)
+            entity.HasIndex(e => e.Name).IsUnique();
+
+            // Seed default roles
+            entity.HasData(
+                new Role { Id = 1, Name = "Admin", Description = "Full system access" },
+                new Role { Id = 2, Name = "User", Description = "Standard user access" }
+            );
+        });
+
         // Configure User entity
         modelBuilder.Entity<User>(entity =>
         {
@@ -209,7 +237,6 @@ public class WefaaqContext : DbContext
             entity.Property(e => e.FirebaseUid).IsRequired().HasMaxLength(128);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(255);
-            entity.Property(e => e.Role).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 
@@ -217,6 +244,13 @@ public class WefaaqContext : DbContext
             entity.HasIndex(e => e.FirebaseUid).IsUnique();
             // Index for Email (unique)
             entity.HasIndex(e => e.Email).IsUnique();
+
+            // Relationship to Role (required)
+            entity.HasOne(e => e.Role)
+                .WithMany(r => r.Users)
+                .HasForeignKey(e => e.RoleId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
 
             // Optional relationship to Organization
             entity.HasOne(e => e.Organization)
@@ -320,6 +354,30 @@ public class WefaaqContext : DbContext
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);
         });
+
+        // Configure UserPayment entity
+        modelBuilder.Entity<UserPayment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Relationship to User
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.CreatedAt);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
     }
 
     public override int SaveChanges()
@@ -401,6 +459,12 @@ public class WefaaqContext : DbContext
                 if (entry.State == EntityState.Added)
                     branch.CreatedAt = DateTime.UtcNow;
                 branch.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is UserPayment payment)
+            {
+                if (entry.State == EntityState.Added)
+                    payment.CreatedAt = DateTime.UtcNow;
+                payment.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

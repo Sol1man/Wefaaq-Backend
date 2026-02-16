@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
@@ -10,6 +11,7 @@ namespace Wefaaq.Api.Controllers;
 [ApiController]
 [Route("api/client-branches")]
 [Produces("application/json")]
+[Authorize] // Require authentication for all endpoints
 public class ClientBranchController : ControllerBase
 {
     private readonly IClientBranchService _branchService;
@@ -167,12 +169,14 @@ public class ClientBranchController : ControllerBase
     }
 
     /// <summary>
-    /// Delete client branch (soft delete)
+    /// Delete client branch (Admin only, soft delete)
     /// </summary>
     [HttpDelete("delete/{id}")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

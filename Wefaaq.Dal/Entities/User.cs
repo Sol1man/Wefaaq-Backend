@@ -34,10 +34,14 @@ public class User
     public string? Name { get; set; }
 
     /// <summary>
-    /// User role (Admin, User, etc.)
+    /// Role ID (foreign key)
     /// </summary>
-    [MaxLength(50)]
-    public string? Role { get; set; }
+    public int RoleId { get; set; }
+
+    /// <summary>
+    /// Navigation property to Role
+    /// </summary>
+    public virtual Role Role { get; set; } = null!;
 
     /// <summary>
     /// Organization ID (foreign key - optional)

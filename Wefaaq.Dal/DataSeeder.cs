@@ -23,7 +23,7 @@ public static class DataSeeder
                     Id = 1,
 					FirebaseUid = "3dMt71HRn7gBLiTYpHgy9UtKyWX2",
 					Email = "admin@wefaaq.com",
-                    Role = nameof(ENum.UserRole.Administrator),
+                    RoleId = 1, // Admin role (seeded in migration)
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 }

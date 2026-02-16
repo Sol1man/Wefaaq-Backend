@@ -1,6 +1,8 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using Wefaaq.Api.Auth;
 using Wefaaq.Api.Extensions;
 using Wefaaq.Api.Middleware;
 using Wefaaq.Bll.Interfaces;
@@ -47,6 +49,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientDeletionService, ClientDeletionService>();
 builder.Services.AddScoped<IClientBranchService, ClientBranchService>();
 builder.Services.AddScoped<IExternalWorkerService, ExternalWorkerService>();
+builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -56,6 +59,12 @@ builder.Services.AddValidatorsFromAssemblyContaining<ClientCreateDtoValidator>()
 
 // Configure Firebase Authentication and JWT Bearer
 builder.Services.AddFirebaseAuthentication(builder.Configuration);
+
+// Add claims transformation for role injection
+builder.Services.AddScoped<IClaimsTransformation, RoleClaimsTransformation>();
+
+// Add authorization policies
+builder.Services.AddAuthorizationPolicies();
 
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

@@ -9,7 +9,8 @@ public class UserDto
     public string Email { get; set; } = string.Empty;
     public string? Name { get; set; }
     public string FirebaseUid { get; set; } = string.Empty;
-    public string? Role { get; set; }
+    public int RoleId { get; set; }
+    public string RoleName { get; set; } = string.Empty;
     public Guid? OrganizationId { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }

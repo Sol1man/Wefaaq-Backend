@@ -20,6 +20,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         return await Context.Users
             .Include(u => u.Organization)
+            .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.FirebaseUid == firebaseUid);
     }
 
@@ -30,6 +31,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         return await Context.Users
             .Include(u => u.Organization)
+            .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
