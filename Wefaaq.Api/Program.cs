@@ -136,6 +136,9 @@ app.UseSwaggerUI(options =>
 
 app.UseCors("AllowAll");
 
+// Global exception handler - catches unhandled exceptions and returns proper JSON responses
+app.UseGlobalExceptionHandler();
+
 // Disable HTTPS redirection in production (Railway handles SSL at proxy level)
 if (app.Environment.IsDevelopment())
 {
