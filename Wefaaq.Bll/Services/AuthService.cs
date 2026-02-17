@@ -86,20 +86,20 @@ public class AuthService(
         }
         catch (FirebaseAuthException ex)
         {
-            logger.LogError(ex, "Firebase authentication error during login");
+            logger.LogError(ex, "Firebase authentication error during login. Code: {Code}, Message: {Message}", ex.ErrorCode, ex.Message);
             return new LoginResponseDto
             {
                 Success = false,
-                Message = "Invalid or expired Firebase token"
+                Message = $"Firebase auth error: {ex.ErrorCode} - {ex.Message}"
             };
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error during login");
+            logger.LogError(ex, "Error during login: {Message}", ex.Message);
             return new LoginResponseDto
             {
                 Success = false,
-                Message = "An error occurred during login"
+                Message = $"Login error: {ex.GetType().Name} - {ex.Message}"
             };
         }
     }
