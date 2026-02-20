@@ -13,7 +13,23 @@ using Wefaaq.Dal;
 using Wefaaq.Dal.Repositories;
 using Wefaaq.Dal.RepositoriesInterfaces;
 
-var builder = WebApplication.CreateBuilder(args);
+// Configure builder to disable file watching in production (fixes Railway inotify limit)
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = Directory.GetCurrentDirectory(),
+    // Disable file watching to avoid Railway's inotify instance limit
+    WebRootPath = "wwwroot"
+});
+
+// Manually configure appsettings without file watching in production
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+var isDevelopment = environment == "Development";
+
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: isDevelopment)
+    .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: isDevelopment)
+    .AddEnvironmentVariables();
 
 // Add services to the container
 builder.Services.AddControllers()
@@ -117,9 +133,24 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        // In production, specifically allow Vercel frontend; in development, allow any origin
+        if (isDevelopment)
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            policy.WithOrigins(
+                      "https://wefaaq-admin.vercel.app",
+                      "http://localhost:4200",  // Local development fallback
+                      "http://localhost:5173"   // Vite dev server fallback
+                  )
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        }
     });
 });
 
