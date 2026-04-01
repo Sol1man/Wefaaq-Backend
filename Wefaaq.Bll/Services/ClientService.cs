@@ -21,6 +21,7 @@ public class ClientService : IClientService
     private readonly IValidator<ClientUpdateDto> _updateValidator;
     private readonly IValidator<ClientWithOrganizationsCreateDto> _createWithOrgsValidator;
     private readonly IValidator<ClientWithOrganizationsUpdateDto> _updateWithOrgsValidator;
+    private readonly IPasswordEncryptionService _passwordEncryption;
 
     public ClientService(
         IClientRepository clientRepository,
@@ -30,7 +31,8 @@ public class ClientService : IClientService
         IValidator<ClientCreateDto> createValidator,
         IValidator<ClientUpdateDto> updateValidator,
         IValidator<ClientWithOrganizationsCreateDto> createWithOrgsValidator,
-        IValidator<ClientWithOrganizationsUpdateDto> updateWithOrgsValidator)
+        IValidator<ClientWithOrganizationsUpdateDto> updateWithOrgsValidator,
+        IPasswordEncryptionService passwordEncryption)
     {
         _clientRepository = clientRepository;
         _organizationRepository = organizationRepository;
@@ -40,6 +42,7 @@ public class ClientService : IClientService
         _updateValidator = updateValidator;
         _createWithOrgsValidator = createWithOrgsValidator;
         _updateWithOrgsValidator = updateWithOrgsValidator;
+        _passwordEncryption = passwordEncryption;
     }
 
     public async Task<IEnumerable<ClientDto>> GetAllAsync()
@@ -51,7 +54,11 @@ public class ClientService : IClientService
     public async Task<ClientDto?> GetByIdAsync(Guid id)
     {
         var client = await _clientRepository.GetByIdAsync(id);
-        return client == null ? null : _mapper.Map<ClientDto>(client);
+        if (client == null) return null;
+
+        var clientDto = _mapper.Map<ClientDto>(client);
+        DecryptPasswordsInClientDto(clientDto);
+        return clientDto;
     }
 
     public async Task<ClientDto> CreateAsync(ClientCreateDto clientCreateDto)
@@ -141,7 +148,11 @@ public class ClientService : IClientService
     public async Task<ClientDto?> GetWithOrganizationsAsync(Guid id)
     {
         var client = await _clientRepository.GetWithOrganizationsAsync(id);
-        return client == null ? null : _mapper.Map<ClientDto>(client);
+        if (client == null) return null;
+
+        var clientDto = _mapper.Map<ClientDto>(client);
+        DecryptPasswordsInClientDto(clientDto);
+        return clientDto;
     }
 
     public async Task<IEnumerable<ClientDto>> GetCreditorsAsync()
@@ -201,6 +212,7 @@ public class ClientService : IClientService
                     organization.Records = orgDto.Records.Select(recordDto => new OrganizationRecord
                     {
                         Id = Guid.NewGuid(),
+                        Name = recordDto.Name,
                         Number = recordDto.Number,
                         ExpiryDate = recordDto.ExpiryDate,
                         ImagePath = recordDto.ImagePath,
@@ -215,6 +227,7 @@ public class ClientService : IClientService
                     organization.Licenses = orgDto.Licenses.Select(licenseDto => new OrganizationLicense
                     {
                         Id = Guid.NewGuid(),
+                        Name = licenseDto.Name,
                         Number = licenseDto.Number,
                         ExpiryDate = licenseDto.ExpiryDate,
                         ImagePath = licenseDto.ImagePath,
@@ -254,6 +267,20 @@ public class ClientService : IClientService
                     }).ToList();
                 }
 
+                // Create organization usernames (with password encryption)
+                if (orgDto.Usernames != null && orgDto.Usernames.Any())
+                {
+                    organization.Usernames = orgDto.Usernames.Select(usernameDto => new OrganizationUsername
+                    {
+                        Id = Guid.NewGuid(),
+                        SiteName = usernameDto.SiteName,
+                        Username = usernameDto.Username,
+                        Password = _passwordEncryption.Encrypt(usernameDto.Password),
+                        OrganizationId = organization.Id,
+                        Organization = organization
+                    }).ToList();
+                }
+
                 return organization;
             }).ToList();
 
@@ -264,7 +291,9 @@ public class ClientService : IClientService
 
         // Reload the client with all nested entities from database
         var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(client.Id);
-        return _mapper.Map<ClientDto>(clientWithDetails);
+        var clientDto = _mapper.Map<ClientDto>(clientWithDetails);
+        DecryptPasswordsInClientDto(clientDto);
+        return clientDto;
     }
 
     public async Task<ClientDto?> EditClientWithOrganizationsAsync(Guid id, ClientWithOrganizationsUpdateDto dto)
@@ -381,7 +410,9 @@ public class ClientService : IClientService
 
         // Reload the client with all nested entities from database
         var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(existingClient.Id);
-        return _mapper.Map<ClientDto>(clientWithDetails);
+        var clientDto = _mapper.Map<ClientDto>(clientWithDetails);
+        DecryptPasswordsInClientDto(clientDto);
+        return clientDto;
     }
 
     // ===== BULK OPERATIONS (Create/Edit with all details) =====
@@ -454,7 +485,9 @@ public class ClientService : IClientService
 
         // Reload the client with all nested entities from database
         var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(client.Id);
-        return _mapper.Map<ClientDto>(clientWithDetails);
+        var clientDto = _mapper.Map<ClientDto>(clientWithDetails);
+        DecryptPasswordsInClientDto(clientDto);
+        return clientDto;
     }
 
     public async Task<ClientDto?> EditClientWithDetailsAsync(Guid id, ClientWithDetailsUpdateDto dto)
@@ -612,7 +645,9 @@ public class ClientService : IClientService
 
         // Reload the client with all nested entities from database
         var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(existingClient.Id);
-        return _mapper.Map<ClientDto>(clientWithDetails);
+        var clientDto = _mapper.Map<ClientDto>(clientWithDetails);
+        DecryptPasswordsInClientDto(clientDto);
+        return clientDto;
     }
 
     // ===== GRANULAR OPERATIONS (Add individual items to existing client) =====
@@ -630,7 +665,9 @@ public class ClientService : IClientService
         var organization = CreateOrganizationEntity(organizationDto, clientId, null);
         var createdOrganization = await _organizationRepository.AddAsync(organization);
 
-        return _mapper.Map<OrganizationDto>(createdOrganization);
+        var orgDto = _mapper.Map<OrganizationDto>(createdOrganization);
+        DecryptPasswordsInOrganizationDto(orgDto);
+        return orgDto;
     }
 
     public async Task<ClientBranchDto> AddBranchToClientAsync(Guid clientId, ClientBranchCreateDto branchDto)
@@ -703,6 +740,7 @@ public class ClientService : IClientService
             organization.Records = dto.Records.Select(recordDto => new OrganizationRecord
             {
                 Id = Guid.NewGuid(),
+                Name = recordDto.Name,
                 Number = recordDto.Number,
                 ExpiryDate = recordDto.ExpiryDate,
                 ImagePath = recordDto.ImagePath,
@@ -716,6 +754,7 @@ public class ClientService : IClientService
             organization.Licenses = dto.Licenses.Select(licenseDto => new OrganizationLicense
             {
                 Id = Guid.NewGuid(),
+                Name = licenseDto.Name,
                 Number = licenseDto.Number,
                 ExpiryDate = licenseDto.ExpiryDate,
                 ImagePath = licenseDto.ImagePath,
@@ -748,6 +787,19 @@ public class ClientService : IClientService
                 SerialNumber = carDto.SerialNumber,
                 ImagePath = carDto.ImagePath,
                 OperatingCardExpiry = carDto.OperatingCardExpiry,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        // Create organization usernames (with password encryption)
+        if (dto.Usernames != null && dto.Usernames.Any())
+        {
+            organization.Usernames = dto.Usernames.Select(usernameDto => new OrganizationUsername
+            {
+                Id = Guid.NewGuid(),
+                SiteName = usernameDto.SiteName,
+                Username = usernameDto.Username,
+                Password = _passwordEncryption.Encrypt(usernameDto.Password),
                 OrganizationId = organization.Id
             }).ToList();
         }
@@ -787,6 +839,7 @@ public class ClientService : IClientService
             organization.Records = dto.Records.Select(recordDto => new OrganizationRecord
             {
                 Id = Guid.NewGuid(),
+                Name = recordDto.Name,
                 Number = recordDto.Number,
                 ExpiryDate = recordDto.ExpiryDate,
                 ImagePath = recordDto.ImagePath,
@@ -800,6 +853,7 @@ public class ClientService : IClientService
             organization.Licenses = dto.Licenses.Select(licenseDto => new OrganizationLicense
             {
                 Id = Guid.NewGuid(),
+                Name = licenseDto.Name,
                 Number = licenseDto.Number,
                 ExpiryDate = licenseDto.ExpiryDate,
                 ImagePath = licenseDto.ImagePath,
@@ -836,6 +890,61 @@ public class ClientService : IClientService
             }).ToList();
         }
 
+        // Create organization usernames (with password encryption)
+        if (dto.Usernames != null && dto.Usernames.Any())
+        {
+            organization.Usernames = dto.Usernames.Select(usernameDto => new OrganizationUsername
+            {
+                Id = Guid.NewGuid(),
+                SiteName = usernameDto.SiteName,
+                Username = usernameDto.Username,
+                Password = _passwordEncryption.Encrypt(usernameDto.Password),
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
         return organization;
+    }
+
+    /// <summary>
+    /// Decrypt passwords in organization usernames
+    /// </summary>
+    private void DecryptPasswordsInOrganizationDto(OrganizationDto orgDto)
+    {
+        if (orgDto.Usernames != null)
+        {
+            foreach (var username in orgDto.Usernames)
+            {
+                username.Password = _passwordEncryption.Decrypt(username.Password);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Decrypt passwords in all organization usernames for a client DTO
+    /// </summary>
+    private void DecryptPasswordsInClientDto(ClientDto clientDto)
+    {
+        if (clientDto.Organizations != null)
+        {
+            foreach (var org in clientDto.Organizations)
+            {
+                DecryptPasswordsInOrganizationDto(org);
+            }
+        }
+
+        if (clientDto.ClientBranches != null)
+        {
+            foreach (var branch in clientDto.ClientBranches)
+            {
+                if (branch.Organizations != null)
+                {
+                    foreach (var org in branch.Organizations)
+                    {
+                        DecryptPasswordsInOrganizationDto(org);
+                    }
+                }
+            }
+        }
     }
 }

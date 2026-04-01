@@ -20,6 +20,7 @@ public class ClientBranchService : IClientBranchService
     private readonly IMapper _mapper;
     private readonly IValidator<ClientBranchCreateDto> _createValidator;
     private readonly IValidator<ClientBranchUpdateDto> _updateValidator;
+    private readonly IPasswordEncryptionService _passwordEncryption;
 
     public ClientBranchService(
         IGenericRepository<ClientBranch> branchRepository,
@@ -27,7 +28,8 @@ public class ClientBranchService : IClientBranchService
         WefaaqContext context,
         IMapper mapper,
         IValidator<ClientBranchCreateDto> createValidator,
-        IValidator<ClientBranchUpdateDto> updateValidator)
+        IValidator<ClientBranchUpdateDto> updateValidator,
+        IPasswordEncryptionService passwordEncryption)
     {
         _branchRepository = branchRepository;
         _clientRepository = clientRepository;
@@ -35,6 +37,7 @@ public class ClientBranchService : IClientBranchService
         _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _passwordEncryption = passwordEncryption;
     }
 
     public async Task<IEnumerable<ClientBranchDto>> GetAllAsync()
@@ -152,7 +155,7 @@ public class ClientBranchService : IClientBranchService
             throw new InvalidOperationException($"Branch with ID {branchId} not found");
         }
 
-        // Create organization
+        // Create organization with full nested entities support
         var organization = new Organization
         {
             Id = Guid.NewGuid(),
@@ -162,10 +165,91 @@ public class ClientBranchService : IClientBranchService
             ClientBranchId = branchId
         };
 
+        // Create organization records
+        if (organizationDto.Records != null && organizationDto.Records.Any())
+        {
+            organization.Records = organizationDto.Records.Select(recordDto => new OrganizationRecord
+            {
+                Id = Guid.NewGuid(),
+                Name = recordDto.Name,
+                Number = recordDto.Number,
+                ExpiryDate = recordDto.ExpiryDate,
+                ImagePath = recordDto.ImagePath,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        // Create organization licenses
+        if (organizationDto.Licenses != null && organizationDto.Licenses.Any())
+        {
+            organization.Licenses = organizationDto.Licenses.Select(licenseDto => new OrganizationLicense
+            {
+                Id = Guid.NewGuid(),
+                Name = licenseDto.Name,
+                Number = licenseDto.Number,
+                ExpiryDate = licenseDto.ExpiryDate,
+                ImagePath = licenseDto.ImagePath,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        // Create organization workers
+        if (organizationDto.Workers != null && organizationDto.Workers.Any())
+        {
+            organization.Workers = organizationDto.Workers.Select(workerDto => new OrganizationWorker
+            {
+                Id = Guid.NewGuid(),
+                Name = workerDto.Name,
+                ResidenceNumber = workerDto.ResidenceNumber,
+                ResidenceImagePath = workerDto.ResidenceImagePath,
+                ExpiryDate = workerDto.ExpiryDate,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        // Create organization cars
+        if (organizationDto.Cars != null && organizationDto.Cars.Any())
+        {
+            organization.Cars = organizationDto.Cars.Select(carDto => new OrganizationCar
+            {
+                Id = Guid.NewGuid(),
+                PlateNumber = carDto.PlateNumber,
+                Color = carDto.Color,
+                SerialNumber = carDto.SerialNumber,
+                ImagePath = carDto.ImagePath,
+                OperatingCardExpiry = carDto.OperatingCardExpiry,
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
+        // Create organization usernames (with password encryption)
+        if (organizationDto.Usernames != null && organizationDto.Usernames.Any())
+        {
+            organization.Usernames = organizationDto.Usernames.Select(usernameDto => new OrganizationUsername
+            {
+                Id = Guid.NewGuid(),
+                SiteName = usernameDto.SiteName,
+                Username = usernameDto.Username,
+                Password = _passwordEncryption.Encrypt(usernameDto.Password),
+                OrganizationId = organization.Id
+            }).ToList();
+        }
+
         _context.Organizations.Add(organization);
         await _context.SaveChangesAsync();
 
-        return _mapper.Map<OrganizationDto>(organization);
+        // Reload with all nested entities
+        var organizationWithDetails = await _context.Organizations
+            .Include(o => o.Records)
+            .Include(o => o.Licenses)
+            .Include(o => o.Workers)
+            .Include(o => o.Cars)
+            .Include(o => o.Usernames)
+            .FirstOrDefaultAsync(o => o.Id == organization.Id);
+
+        var orgDto = _mapper.Map<OrganizationDto>(organizationWithDetails);
+        DecryptPasswordsInOrganizationDto(orgDto);
+        return orgDto;
     }
 
     public async Task<ExternalWorkerDto> AddExternalWorkerToBranchAsync(Guid branchId, ExternalWorkerCreateDto workerDto)
@@ -194,5 +278,19 @@ public class ClientBranchService : IClientBranchService
         await _context.SaveChangesAsync();
 
         return _mapper.Map<ExternalWorkerDto>(worker);
+    }
+
+    /// <summary>
+    /// Decrypt passwords in organization usernames
+    /// </summary>
+    private void DecryptPasswordsInOrganizationDto(OrganizationDto orgDto)
+    {
+        if (orgDto.Usernames != null)
+        {
+            foreach (var username in orgDto.Usernames)
+            {
+                username.Password = _passwordEncryption.Decrypt(username.Password);
+            }
+        }
     }
 }

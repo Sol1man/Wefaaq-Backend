@@ -66,6 +66,7 @@ builder.Services.AddScoped<IClientDeletionService, ClientDeletionService>();
 builder.Services.AddScoped<IClientBranchService, ClientBranchService>();
 builder.Services.AddScoped<IExternalWorkerService, ExternalWorkerService>();
 builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
+builder.Services.AddScoped<IPasswordEncryptionService, PasswordEncryptionService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));

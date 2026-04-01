@@ -38,6 +38,7 @@ public class OrganizationCreateDto
     public List<OrganizationLicenseCreateDto>? Licenses { get; set; }
     public List<OrganizationWorkerCreateDto>? Workers { get; set; }
     public List<OrganizationCarCreateDto>? Cars { get; set; }
+    public List<OrganizationUsernameCreateDto>? Usernames { get; set; }
 }
 
 /// <summary>
@@ -50,11 +51,12 @@ public class OrganizationUpdateDto
     public Guid? ClientId { get; set; }
     public Guid? ClientBranchId { get; set; }
 
-    // Nested entities (records, licenses, workers, cars)
+    // Nested entities (records, licenses, workers, cars, usernames)
     public List<OrganizationRecordCreateDto>? Records { get; set; }
     public List<OrganizationLicenseCreateDto>? Licenses { get; set; }
     public List<OrganizationWorkerCreateDto>? Workers { get; set; }
     public List<OrganizationCarCreateDto>? Cars { get; set; }
+    public List<OrganizationUsernameCreateDto>? Usernames { get; set; }
 }
 
 /// <summary>
@@ -63,6 +65,7 @@ public class OrganizationUpdateDto
 public class OrganizationRecordDto
 {
     public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
     public string Number { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public string? ImagePath { get; set; }
@@ -78,6 +81,7 @@ public class OrganizationRecordDto
 /// </summary>
 public class OrganizationRecordCreateDto
 {
+    public string Name { get; set; } = string.Empty;
     public string Number { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public string? ImagePath { get; set; }
@@ -88,6 +92,7 @@ public class OrganizationRecordCreateDto
 /// </summary>
 public class OrganizationRecordUpdateDto
 {
+    public string Name { get; set; } = string.Empty;
     public string Number { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public string? ImagePath { get; set; }
@@ -99,6 +104,7 @@ public class OrganizationRecordUpdateDto
 public class OrganizationLicenseDto
 {
     public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
     public string Number { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public string? ImagePath { get; set; }
@@ -114,6 +120,7 @@ public class OrganizationLicenseDto
 /// </summary>
 public class OrganizationLicenseCreateDto
 {
+    public string Name { get; set; } = string.Empty;
     public string Number { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public string? ImagePath { get; set; }
@@ -124,6 +131,7 @@ public class OrganizationLicenseCreateDto
 /// </summary>
 public class OrganizationLicenseUpdateDto
 {
+    public string Name { get; set; } = string.Empty;
     public string Number { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public string? ImagePath { get; set; }

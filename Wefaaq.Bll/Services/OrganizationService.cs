@@ -17,19 +17,22 @@ public class OrganizationService : IOrganizationService
     private readonly IMapper _mapper;
     private readonly IValidator<OrganizationCreateDto> _createValidator;
     private readonly IValidator<OrganizationUpdateDto> _updateValidator;
+    private readonly IPasswordEncryptionService _passwordEncryption;
 
     public OrganizationService(
         IOrganizationRepository organizationRepository,
         IClientRepository clientRepository,
         IMapper mapper,
         IValidator<OrganizationCreateDto> createValidator,
-        IValidator<OrganizationUpdateDto> updateValidator)
+        IValidator<OrganizationUpdateDto> updateValidator,
+        IPasswordEncryptionService passwordEncryption)
     {
         _organizationRepository = organizationRepository;
         _clientRepository = clientRepository;
         _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _passwordEncryption = passwordEncryption;
     }
 
     public async Task<IEnumerable<OrganizationDto>> GetAllAsync()
@@ -41,7 +44,11 @@ public class OrganizationService : IOrganizationService
     public async Task<OrganizationDto?> GetByIdAsync(Guid id)
     {
         var organization = await _organizationRepository.GetByIdAsync(id);
-        return organization == null ? null : _mapper.Map<OrganizationDto>(organization);
+        if (organization == null) return null;
+
+        var orgDto = _mapper.Map<OrganizationDto>(organization);
+        DecryptPasswordsInOrganizationDto(orgDto);
+        return orgDto;
     }
 
     public async Task<OrganizationDto> CreateAsync(OrganizationCreateDto organizationCreateDto)
@@ -77,7 +84,9 @@ public class OrganizationService : IOrganizationService
         organization.Id = Guid.NewGuid();
 
         var createdOrganization = await _organizationRepository.AddAsync(organization);
-        return _mapper.Map<OrganizationDto>(createdOrganization);
+        var orgDto = _mapper.Map<OrganizationDto>(createdOrganization);
+        DecryptPasswordsInOrganizationDto(orgDto);
+        return orgDto;
     }
 
     public async Task<OrganizationDto?> UpdateAsync(Guid id, OrganizationUpdateDto organizationUpdateDto)
@@ -118,7 +127,9 @@ public class OrganizationService : IOrganizationService
         _mapper.Map(organizationUpdateDto, existingOrganization);
 
         var updatedOrganization = await _organizationRepository.UpdateAsync(existingOrganization);
-        return _mapper.Map<OrganizationDto>(updatedOrganization);
+        var orgDto = _mapper.Map<OrganizationDto>(updatedOrganization);
+        DecryptPasswordsInOrganizationDto(orgDto);
+        return orgDto;
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -184,5 +195,19 @@ public class OrganizationService : IOrganizationService
     public async Task<bool> DeleteUsernameAsync(Guid organizationId, Guid usernameId)
     {
         throw new NotImplementedException("Username operations to be implemented in full version");
+    }
+
+    /// <summary>
+    /// Decrypt passwords in organization usernames
+    /// </summary>
+    private void DecryptPasswordsInOrganizationDto(OrganizationDto orgDto)
+    {
+        if (orgDto.Usernames != null)
+        {
+            foreach (var username in orgDto.Usernames)
+            {
+                username.Password = _passwordEncryption.Decrypt(username.Password);
+            }
+        }
     }
 }

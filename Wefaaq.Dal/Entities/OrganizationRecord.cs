@@ -14,6 +14,13 @@ public class OrganizationRecord : ISoftDeletable
     public Guid Id { get; set; }
 
     /// <summary>
+    /// Record name (اسم السجل)
+    /// </summary>
+    [Required]
+    [MaxLength(200)]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
     /// Record number (رقم)
     /// </summary>
     [Required]

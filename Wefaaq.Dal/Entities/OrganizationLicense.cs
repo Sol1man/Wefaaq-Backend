@@ -14,6 +14,13 @@ public class OrganizationLicense : ISoftDeletable
     public Guid Id { get; set; }
 
     /// <summary>
+    /// License name (اسم الترخيص)
+    /// </summary>
+    [Required]
+    [MaxLength(200)]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
     /// License number (رقم الترخيص)
     /// </summary>
     [Required]

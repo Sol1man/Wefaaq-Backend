@@ -16,6 +16,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     public async Task<Client?> GetWithOrganizationsAsync(Guid id)
     {
         return await DbSet
+            .AsSplitQuery() // Use split queries to avoid cartesian explosion and improve performance
             // Include direct organizations and their nested entities
             .Include(c => c.Organizations)
                 .ThenInclude(o => o.Records)
