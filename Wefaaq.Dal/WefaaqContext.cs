@@ -72,6 +72,11 @@ public class WefaaqContext : DbContext
     /// </summary>
     public DbSet<UserPayment> UserPayments { get; set; }
 
+    /// <summary>
+    /// Client operations table (عمليات العملاء)
+    /// </summary>
+    public DbSet<ClientOperation> ClientOperations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -378,6 +383,57 @@ public class WefaaqContext : DbContext
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);
         });
+
+        // Configure ClientOperation entity
+        modelBuilder.Entity<ClientOperation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.ExternalPersonName).HasMaxLength(255);
+            entity.Property(e => e.ExternalPersonIdNumber).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // FK to Client (optional)
+            entity.HasOne(e => e.Client)
+                .WithMany()
+                .HasForeignKey(e => e.ClientId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // FK to ClientBranch (optional)
+            entity.HasOne(e => e.ClientBranch)
+                .WithMany()
+                .HasForeignKey(e => e.ClientBranchId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // FK to Organization (optional)
+            entity.HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // FK to User (performed by)
+            entity.HasOne(e => e.PerformedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.PerformedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            entity.HasIndex(e => e.ClientId);
+            entity.HasIndex(e => e.ClientBranchId);
+            entity.HasIndex(e => e.OrganizationId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.Type);
+            entity.HasIndex(e => e.CreatedAt);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
     }
 
     public override int SaveChanges()
@@ -465,6 +521,12 @@ public class WefaaqContext : DbContext
                 if (entry.State == EntityState.Added)
                     payment.CreatedAt = DateTime.UtcNow;
                 payment.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is ClientOperation operation)
+            {
+                if (entry.State == EntityState.Added)
+                    operation.CreatedAt = DateTime.UtcNow;
+                operation.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

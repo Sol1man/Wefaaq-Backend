@@ -67,6 +67,7 @@ builder.Services.AddScoped<IClientBranchService, ClientBranchService>();
 builder.Services.AddScoped<IExternalWorkerService, ExternalWorkerService>();
 builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
 builder.Services.AddScoped<IPasswordEncryptionService, PasswordEncryptionService>();
+builder.Services.AddScoped<IClientOperationService, ClientOperationService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -167,6 +168,11 @@ app.UseSwaggerUI(options =>
 });
 
 app.UseCors("AllowAll");
+
+// Performance diagnostics: log total wall-clock time for every HTTP request.
+// Combined with EF Core command logging, this lets us see whether time is spent
+// in SQL execution, network round-trips, or controller logic.
+app.UseRequestTiming();
 
 // Global exception handler - catches unhandled exceptions and returns proper JSON responses
 app.UseGlobalExceptionHandler();

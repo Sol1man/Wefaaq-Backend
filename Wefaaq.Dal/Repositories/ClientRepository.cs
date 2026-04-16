@@ -54,6 +54,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     public async Task<IEnumerable<Client>> GetByClassificationAsync(ClientClassification classification)
     {
         return await DbSet
+            .AsNoTracking()
             .Where(c => c.Classification == classification)
             .ToListAsync();
     }
@@ -61,6 +62,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     public async Task<IEnumerable<Client>> GetCreditorsAsync()
     {
         return await DbSet
+            .AsNoTracking()
             .Where(c => c.Balance > 0)
             .ToListAsync();
     }
@@ -68,6 +70,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     public async Task<IEnumerable<Client>> GetDebtorsAsync()
     {
         return await DbSet
+            .AsNoTracking()
             .Where(c => c.Balance < 0)
             .ToListAsync();
     }
@@ -87,7 +90,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     public override async Task<IEnumerable<Client>> GetAllAsync()
     {
         // Do NOT include organizations - use GetWithOrganizationsAsync for that
-        return await DbSet.ToListAsync();
+        return await DbSet.AsNoTracking().ToListAsync();
     }
 
     public override async Task<Client?> GetByIdAsync(Guid id)

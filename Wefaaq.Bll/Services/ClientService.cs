@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 using Wefaaq.Dal;
@@ -120,19 +121,14 @@ public class ClientService : IClientService
         // Update client properties
         _mapper.Map(clientUpdateDto, existingClient);
 
-        // Handle organization relationships
+        // Handle organization relationships — single query instead of N round-trips
         existingClient.Organizations.Clear();
         if (clientUpdateDto.OrganizationIds.Any())
         {
-            var organizations = new List<Organization>();
-            foreach (var orgId in clientUpdateDto.OrganizationIds)
-            {
-                var org = await _organizationRepository.GetByIdAsync(orgId);
-                if (org != null)
-                {
-                    organizations.Add(org);
-                }
-            }
+            var orgIds = clientUpdateDto.OrganizationIds;
+            var organizations = await _context.Organizations
+                .Where(o => orgIds.Contains(o.Id))
+                .ToListAsync();
             existingClient.Organizations = organizations;
         }
 
@@ -147,12 +143,248 @@ public class ClientService : IClientService
 
     public async Task<ClientDto?> GetWithOrganizationsAsync(Guid id)
     {
-        var client = await _clientRepository.GetWithOrganizationsAsync(id);
-        if (client == null) return null;
+        var clientDto = await BuildClientDtoQuery(_context.Clients.AsNoTracking().Where(c => c.Id == id))
+            .FirstOrDefaultAsync();
 
-        var clientDto = _mapper.Map<ClientDto>(client);
+        if (clientDto == null) return null;
+
         DecryptPasswordsInClientDto(clientDto);
         return clientDto;
+    }
+
+    /// <summary>
+    /// Builds a single-query projection from Client entities to ClientDto with all nested
+    /// collections (organizations, branches, workers, records, licenses, cars, usernames).
+    /// Replaces the previous ~14 split-query Include chain that was the main perf bottleneck —
+    /// EF translates this to one optimized SELECT, skipping change tracking and AutoMapper.
+    /// Password decryption still happens in C# on the resulting DTO.
+    /// </summary>
+    private IQueryable<ClientDto> BuildClientDtoQuery(IQueryable<Client> source)
+    {
+        return source.Select(c => new ClientDto
+        {
+            Id = c.Id,
+            Name = c.Name,
+            Email = c.Email,
+            PhoneNumber = c.PhoneNumber,
+            Classification = c.Classification,
+            Balance = c.Balance,
+            IsDeleted = c.IsDeleted,
+            DeletedAt = c.DeletedAt,
+            CreatedAt = c.CreatedAt,
+            UpdatedAt = c.UpdatedAt,
+
+            Organizations = c.Organizations.Select(o => new OrganizationDto
+            {
+                Id = o.Id,
+                Name = o.Name,
+                CardExpiringSoon = o.CardExpiringSoon,
+                ClientId = o.ClientId,
+                Client = c.Name,
+                ClientBranchId = o.ClientBranchId,
+                ClientBranch = null,
+                IsDeleted = o.IsDeleted,
+                DeletedAt = o.DeletedAt,
+                CreatedAt = o.CreatedAt,
+                UpdatedAt = o.UpdatedAt,
+                Records = o.Records.Select(r => new OrganizationRecordDto
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    Number = r.Number,
+                    ExpiryDate = r.ExpiryDate,
+                    ImagePath = r.ImagePath,
+                    OrganizationId = r.OrganizationId,
+                    IsDeleted = r.IsDeleted,
+                    DeletedAt = r.DeletedAt,
+                    CreatedAt = r.CreatedAt,
+                    UpdatedAt = r.UpdatedAt,
+                }).ToList(),
+                Licenses = o.Licenses.Select(l => new OrganizationLicenseDto
+                {
+                    Id = l.Id,
+                    Name = l.Name,
+                    Number = l.Number,
+                    ExpiryDate = l.ExpiryDate,
+                    ImagePath = l.ImagePath,
+                    OrganizationId = l.OrganizationId,
+                    IsDeleted = l.IsDeleted,
+                    DeletedAt = l.DeletedAt,
+                    CreatedAt = l.CreatedAt,
+                    UpdatedAt = l.UpdatedAt,
+                }).ToList(),
+                Workers = o.Workers.Select(w => new OrganizationWorkerDto
+                {
+                    Id = w.Id,
+                    Name = w.Name,
+                    ResidenceNumber = w.ResidenceNumber,
+                    ResidenceImagePath = w.ResidenceImagePath,
+                    ExpiryDate = w.ExpiryDate,
+                    OrganizationId = w.OrganizationId,
+                    IsDeleted = w.IsDeleted,
+                    DeletedAt = w.DeletedAt,
+                    CreatedAt = w.CreatedAt,
+                    UpdatedAt = w.UpdatedAt,
+                }).ToList(),
+                Cars = o.Cars.Select(ca => new OrganizationCarDto
+                {
+                    Id = ca.Id,
+                    PlateNumber = ca.PlateNumber,
+                    Color = ca.Color,
+                    SerialNumber = ca.SerialNumber,
+                    ImagePath = ca.ImagePath,
+                    OperatingCardExpiry = ca.OperatingCardExpiry,
+                    OrganizationId = ca.OrganizationId,
+                    IsDeleted = ca.IsDeleted,
+                    DeletedAt = ca.DeletedAt,
+                    CreatedAt = ca.CreatedAt,
+                    UpdatedAt = ca.UpdatedAt,
+                }).ToList(),
+                Usernames = o.Usernames.Select(u => new OrganizationUsernameDto
+                {
+                    Id = u.Id,
+                    SiteName = u.SiteName,
+                    Username = u.Username,
+                    Password = u.Password,
+                    OrganizationId = u.OrganizationId,
+                    IsDeleted = u.IsDeleted,
+                    DeletedAt = u.DeletedAt,
+                    CreatedAt = u.CreatedAt,
+                    UpdatedAt = u.UpdatedAt,
+                }).ToList(),
+            }).ToList(),
+
+            ExternalWorkers = c.ExternalWorkers.Select(w => new ExternalWorkerDto
+            {
+                Id = w.Id,
+                Name = w.Name,
+                WorkerType = w.WorkerType,
+                ResidenceNumber = w.ResidenceNumber,
+                ResidenceImagePath = w.ResidenceImagePath,
+                ExpiryDate = w.ExpiryDate,
+                ClientId = w.ClientId,
+                Client = c.Name,
+                ClientBranchId = w.ClientBranchId,
+                ClientBranch = null,
+                IsDeleted = w.IsDeleted,
+                DeletedAt = w.DeletedAt,
+                CreatedAt = w.CreatedAt,
+                UpdatedAt = w.UpdatedAt,
+            }).ToList(),
+
+            ClientBranches = c.ClientBranches.Select(b => new ClientBranchDto
+            {
+                Id = b.Id,
+                Name = b.Name,
+                Email = b.Email ?? string.Empty,
+                PhoneNumber = b.PhoneNumber,
+                Classification = b.Classification,
+                Balance = b.Balance,
+                ParentClientId = b.ParentClientId,
+                ParentClient = c.Name,
+                BranchType = b.BranchType,
+                IsDeleted = b.IsDeleted,
+                DeletedAt = b.DeletedAt,
+                CreatedAt = b.CreatedAt,
+                UpdatedAt = b.UpdatedAt,
+                Organizations = b.Organizations.Select(o => new OrganizationDto
+                {
+                    Id = o.Id,
+                    Name = o.Name,
+                    CardExpiringSoon = o.CardExpiringSoon,
+                    ClientId = o.ClientId,
+                    Client = null,
+                    ClientBranchId = o.ClientBranchId,
+                    ClientBranch = b.Name,
+                    IsDeleted = o.IsDeleted,
+                    DeletedAt = o.DeletedAt,
+                    CreatedAt = o.CreatedAt,
+                    UpdatedAt = o.UpdatedAt,
+                    Records = o.Records.Select(r => new OrganizationRecordDto
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        Number = r.Number,
+                        ExpiryDate = r.ExpiryDate,
+                        ImagePath = r.ImagePath,
+                        OrganizationId = r.OrganizationId,
+                        IsDeleted = r.IsDeleted,
+                        DeletedAt = r.DeletedAt,
+                        CreatedAt = r.CreatedAt,
+                        UpdatedAt = r.UpdatedAt,
+                    }).ToList(),
+                    Licenses = o.Licenses.Select(l => new OrganizationLicenseDto
+                    {
+                        Id = l.Id,
+                        Name = l.Name,
+                        Number = l.Number,
+                        ExpiryDate = l.ExpiryDate,
+                        ImagePath = l.ImagePath,
+                        OrganizationId = l.OrganizationId,
+                        IsDeleted = l.IsDeleted,
+                        DeletedAt = l.DeletedAt,
+                        CreatedAt = l.CreatedAt,
+                        UpdatedAt = l.UpdatedAt,
+                    }).ToList(),
+                    Workers = o.Workers.Select(w => new OrganizationWorkerDto
+                    {
+                        Id = w.Id,
+                        Name = w.Name,
+                        ResidenceNumber = w.ResidenceNumber,
+                        ResidenceImagePath = w.ResidenceImagePath,
+                        ExpiryDate = w.ExpiryDate,
+                        OrganizationId = w.OrganizationId,
+                        IsDeleted = w.IsDeleted,
+                        DeletedAt = w.DeletedAt,
+                        CreatedAt = w.CreatedAt,
+                        UpdatedAt = w.UpdatedAt,
+                    }).ToList(),
+                    Cars = o.Cars.Select(ca => new OrganizationCarDto
+                    {
+                        Id = ca.Id,
+                        PlateNumber = ca.PlateNumber,
+                        Color = ca.Color,
+                        SerialNumber = ca.SerialNumber,
+                        ImagePath = ca.ImagePath,
+                        OperatingCardExpiry = ca.OperatingCardExpiry,
+                        OrganizationId = ca.OrganizationId,
+                        IsDeleted = ca.IsDeleted,
+                        DeletedAt = ca.DeletedAt,
+                        CreatedAt = ca.CreatedAt,
+                        UpdatedAt = ca.UpdatedAt,
+                    }).ToList(),
+                    Usernames = o.Usernames.Select(u => new OrganizationUsernameDto
+                    {
+                        Id = u.Id,
+                        SiteName = u.SiteName,
+                        Username = u.Username,
+                        Password = u.Password,
+                        OrganizationId = u.OrganizationId,
+                        IsDeleted = u.IsDeleted,
+                        DeletedAt = u.DeletedAt,
+                        CreatedAt = u.CreatedAt,
+                        UpdatedAt = u.UpdatedAt,
+                    }).ToList(),
+                }).ToList(),
+                ExternalWorkers = b.ExternalWorkers.Select(w => new ExternalWorkerDto
+                {
+                    Id = w.Id,
+                    Name = w.Name,
+                    WorkerType = w.WorkerType,
+                    ResidenceNumber = w.ResidenceNumber,
+                    ResidenceImagePath = w.ResidenceImagePath,
+                    ExpiryDate = w.ExpiryDate,
+                    ClientId = w.ClientId,
+                    Client = null,
+                    ClientBranchId = w.ClientBranchId,
+                    ClientBranch = b.Name,
+                    IsDeleted = w.IsDeleted,
+                    DeletedAt = w.DeletedAt,
+                    CreatedAt = w.CreatedAt,
+                    UpdatedAt = w.UpdatedAt,
+                }).ToList(),
+            }).ToList(),
+        });
     }
 
     public async Task<IEnumerable<ClientDto>> GetCreditorsAsync()
@@ -289,11 +521,14 @@ public class ClientService : IClientService
 
         await _clientRepository.AddAsync(client);
 
-        // Reload the client with all nested entities from database
-        var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(client.Id);
-        var clientDto = _mapper.Map<ClientDto>(clientWithDetails);
-        DecryptPasswordsInClientDto(clientDto);
-        return clientDto;
+        // Reload via single-query projection — same shape, ~14× fewer round-trips than the old Include chain
+        var clientDto = await BuildClientDtoQuery(_context.Clients.AsNoTracking().Where(c => c.Id == client.Id))
+            .FirstOrDefaultAsync();
+        if (clientDto != null)
+        {
+            DecryptPasswordsInClientDto(clientDto);
+        }
+        return clientDto!;
     }
 
     public async Task<ClientDto?> EditClientWithOrganizationsAsync(Guid id, ClientWithOrganizationsUpdateDto dto)
@@ -408,10 +643,13 @@ public class ClientService : IClientService
         // Save all changes in a single transaction
         await _context.SaveChangesAsync();
 
-        // Reload the client with all nested entities from database
-        var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(existingClient.Id);
-        var clientDto = _mapper.Map<ClientDto>(clientWithDetails);
-        DecryptPasswordsInClientDto(clientDto);
+        // Reload via single-query projection — same shape, ~14× fewer round-trips than the old Include chain
+        var clientDto = await BuildClientDtoQuery(_context.Clients.AsNoTracking().Where(c => c.Id == existingClient.Id))
+            .FirstOrDefaultAsync();
+        if (clientDto != null)
+        {
+            DecryptPasswordsInClientDto(clientDto);
+        }
         return clientDto;
     }
 
@@ -483,11 +721,14 @@ public class ClientService : IClientService
 
         await _clientRepository.AddAsync(client);
 
-        // Reload the client with all nested entities from database
-        var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(client.Id);
-        var clientDto = _mapper.Map<ClientDto>(clientWithDetails);
-        DecryptPasswordsInClientDto(clientDto);
-        return clientDto;
+        // Reload via single-query projection — same shape, ~14× fewer round-trips than the old Include chain
+        var clientDto = await BuildClientDtoQuery(_context.Clients.AsNoTracking().Where(c => c.Id == client.Id))
+            .FirstOrDefaultAsync();
+        if (clientDto != null)
+        {
+            DecryptPasswordsInClientDto(clientDto);
+        }
+        return clientDto!;
     }
 
     public async Task<ClientDto?> EditClientWithDetailsAsync(Guid id, ClientWithDetailsUpdateDto dto)
@@ -643,10 +884,13 @@ public class ClientService : IClientService
         // Save all changes in a single transaction
         await _context.SaveChangesAsync();
 
-        // Reload the client with all nested entities from database
-        var clientWithDetails = await _clientRepository.GetWithOrganizationsAsync(existingClient.Id);
-        var clientDto = _mapper.Map<ClientDto>(clientWithDetails);
-        DecryptPasswordsInClientDto(clientDto);
+        // Reload via single-query projection — same shape, ~14× fewer round-trips than the old Include chain
+        var clientDto = await BuildClientDtoQuery(_context.Clients.AsNoTracking().Where(c => c.Id == existingClient.Id))
+            .FirstOrDefaultAsync();
+        if (clientDto != null)
+        {
+            DecryptPasswordsInClientDto(clientDto);
+        }
         return clientDto;
     }
 
