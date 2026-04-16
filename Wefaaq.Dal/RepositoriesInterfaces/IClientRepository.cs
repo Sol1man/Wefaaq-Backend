@@ -13,6 +13,7 @@ public interface IClientRepository : IGenericRepository<Client>
     /// <param name="id">Client ID</param>
     /// <returns>Client with organizations or null</returns>
     Task<Client?> GetWithOrganizationsAsync(Guid id);
+    Task<Client?> GetWithOrganizationsReadOnlyAsync(Guid id);
 
     /// <summary>
     /// Get clients by classification

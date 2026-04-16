@@ -15,9 +15,21 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
 
     public async Task<Client?> GetWithOrganizationsAsync(Guid id)
     {
-        return await DbSet
-            .AsSplitQuery() // Use split queries to avoid cartesian explosion and improve performance
-            // Include direct organizations and their nested entities
+        return await FullDetailsQuery()
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<Client?> GetWithOrganizationsReadOnlyAsync(Guid id)
+    {
+        return await FullDetailsQuery()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    private IQueryable<Client> FullDetailsQuery()
+    {
+        return DbSet
+            .AsSplitQuery()
             .Include(c => c.Organizations)
                 .ThenInclude(o => o.Records)
             .Include(c => c.Organizations)
@@ -28,7 +40,6 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
                 .ThenInclude(o => o.Cars)
             .Include(c => c.Organizations)
                 .ThenInclude(o => o.Usernames)
-            // Include client branches and their nested entities
             .Include(c => c.ClientBranches)
                 .ThenInclude(cb => cb.Organizations)
                     .ThenInclude(o => o.Records)
@@ -46,9 +57,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
                     .ThenInclude(o => o.Usernames)
             .Include(c => c.ClientBranches)
                 .ThenInclude(cb => cb.ExternalWorkers)
-            // Include direct external workers
-            .Include(c => c.ExternalWorkers)
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .Include(c => c.ExternalWorkers);
     }
 
     public async Task<IEnumerable<Client>> GetByClassificationAsync(ClientClassification classification)
