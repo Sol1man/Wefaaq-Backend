@@ -43,6 +43,7 @@ public class ExternalWorkerCreateDto
 /// </summary>
 public class ExternalWorkerUpdateDto
 {
+    public Guid? Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public WorkerType WorkerType { get; set; }
     public string? ResidenceNumber { get; set; }

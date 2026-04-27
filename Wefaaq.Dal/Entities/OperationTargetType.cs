@@ -14,6 +14,6 @@ public enum OperationTargetType
     /// <summary>مؤسسة</summary>
     Organization = 3,
 
-    /// <summary>شخص خارجي (غير عميل)</summary>
+    /// <summary>عميل خارجي</summary>
     ExternalPerson = 4,
 }

@@ -494,149 +494,23 @@ public class ClientService : IClientService
             return null;
         }
 
-        // Check if email already exists for another client
         if (await _clientRepository.EmailExistsAsync(dto.Email, id))
         {
             throw new InvalidOperationException($"Client with email '{dto.Email}' already exists");
         }
 
-        // Update client properties
+        // Update client scalar properties
         existingClient.Name = dto.Name;
         existingClient.Email = dto.Email;
         existingClient.PhoneNumber = dto.PhoneNumber;
         existingClient.Classification = dto.Classification;
         existingClient.Balance = dto.Balance;
 
-        // Soft-delete all existing organizations (direct organizations)
-        if (existingClient.Organizations != null && existingClient.Organizations.Any())
-        {
-            foreach (var org in existingClient.Organizations.ToList())
-            {
-                org.IsDeleted = true;
-                org.DeletedAt = DateTime.UtcNow;
-            }
-        }
+        // Merge nested collections: items with matching Id → update, null Id → insert, missing → soft-delete
+        MergeOrganizations(existingClient.Organizations, dto.Organizations, existingClient.Id, null);
+        MergeBranches(existingClient.ClientBranches, dto.Branches, existingClient.Id);
+        MergeExternalWorkers(existingClient.ExternalWorkers, dto.ExternalWorkers, existingClient.Id, null);
 
-        // Soft-delete all existing branches and their nested entities
-        if (existingClient.ClientBranches != null && existingClient.ClientBranches.Any())
-        {
-            foreach (var branch in existingClient.ClientBranches.ToList())
-            {
-                // Soft-delete branch organizations
-                if (branch.Organizations != null)
-                {
-                    foreach (var org in branch.Organizations)
-                    {
-                        org.IsDeleted = true;
-                        org.DeletedAt = DateTime.UtcNow;
-                    }
-                }
-                // Soft-delete branch external workers
-                if (branch.ExternalWorkers != null)
-                {
-                    foreach (var worker in branch.ExternalWorkers)
-                    {
-                        worker.IsDeleted = true;
-                        worker.DeletedAt = DateTime.UtcNow;
-                    }
-                }
-                // Soft-delete the branch itself
-                branch.IsDeleted = true;
-                branch.DeletedAt = DateTime.UtcNow;
-            }
-        }
-
-        // Soft-delete all existing direct external workers
-        if (existingClient.ExternalWorkers != null && existingClient.ExternalWorkers.Any())
-        {
-            foreach (var worker in existingClient.ExternalWorkers.ToList())
-            {
-                worker.IsDeleted = true;
-                worker.DeletedAt = DateTime.UtcNow;
-            }
-        }
-
-        // Add new direct organizations
-        if (dto.Organizations.Any())
-        {
-            foreach (var orgDto in dto.Organizations)
-            {
-                var newOrg = CreateOrganizationEntityFromUpdate(orgDto, existingClient.Id, null);
-                _context.Organizations.Add(newOrg);
-            }
-        }
-
-        // Add new branches with their organizations and external workers
-        if (dto.Branches.Any())
-        {
-            foreach (var branchDto in dto.Branches)
-            {
-                var branch = new ClientBranch
-                {
-                    Id = Guid.NewGuid(),
-                    Name = branchDto.Name,
-                    Email = branchDto.Email,
-                    PhoneNumber = branchDto.PhoneNumber,
-                    Classification = branchDto.Classification,
-                    Balance = branchDto.Balance,
-                    BranchType = branchDto.BranchType,
-                    ParentClientId = existingClient.Id
-                };
-                _context.ClientBranches.Add(branch);
-
-                // Add branch organizations
-                if (branchDto.Organizations.Any())
-                {
-                    foreach (var orgDto in branchDto.Organizations)
-                    {
-                        var newOrg = CreateOrganizationEntityFromUpdate(orgDto, null, branch.Id);
-                        _context.Organizations.Add(newOrg);
-                    }
-                }
-
-                // Add branch external workers
-                if (branchDto.ExternalWorkers.Any())
-                {
-                    foreach (var workerDto in branchDto.ExternalWorkers)
-                    {
-                        var newWorker = new ExternalWorker
-                        {
-                            Id = Guid.NewGuid(),
-                            Name = workerDto.Name,
-                            WorkerType = workerDto.WorkerType,
-                            ResidenceNumber = workerDto.ResidenceNumber ?? string.Empty,
-                            ResidenceImagePath = workerDto.ResidenceImagePath,
-                            ExpiryDate = workerDto.ExpiryDate ?? DateTime.UtcNow.AddYears(1),
-                            ClientId = null,
-                            ClientBranchId = branch.Id
-                        };
-                        _context.ExternalWorkers.Add(newWorker);
-                    }
-                }
-            }
-        }
-
-        // Add new direct external workers
-        if (dto.ExternalWorkers.Any())
-        {
-            foreach (var workerDto in dto.ExternalWorkers)
-            {
-                var newWorker = new ExternalWorker
-                {
-                    Id = Guid.NewGuid(),
-                    Name = workerDto.Name,
-                    WorkerType = workerDto.WorkerType,
-                    ResidenceNumber = workerDto.ResidenceNumber ?? string.Empty,
-                    ResidenceImagePath = workerDto.ResidenceImagePath,
-                    ExpiryDate = workerDto.ExpiryDate ?? DateTime.UtcNow.AddYears(1),
-                    ClientId = existingClient.Id,
-                    ClientBranchId = null
-                };
-                _context.ExternalWorkers.Add(newWorker);
-            }
-        }
-
-        // Save all changes in a single transaction
         await _context.SaveChangesAsync();
 
         // Reload using AsNoTracking — no need for change tracking after update
@@ -668,51 +542,34 @@ public class ClientService : IClientService
 
     public async Task<ClientBranchDto> AddBranchToClientAsync(Guid clientId, ClientBranchCreateDto branchDto)
     {
-        // Verify client exists
-        var client = await _clientRepository.GetByIdAsync(clientId);
-        if (client == null)
+        var clientExists = await _context.Clients.AnyAsync(c => c.Id == clientId);
+        if (!clientExists)
         {
             throw new InvalidOperationException($"Client with ID {clientId} not found");
         }
 
-        // Create branch
         var branch = _mapper.Map<ClientBranch>(branchDto);
         branch.Id = Guid.NewGuid();
-        // Always use the clientId from route parameter (overrides DTO value if present)
         branch.ParentClientId = clientId;
 
-        // Note: Branch will be added through the client repository or a dedicated branch repository
-        // For now, we'll add it to the client's branches collection
-        if (client.ClientBranches == null)
-        {
-            client.ClientBranches = new List<ClientBranch>();
-        }
-        client.ClientBranches.Add(branch);
-        await _clientRepository.UpdateAsync(client);
+        _context.ClientBranches.Add(branch);
+        await _context.SaveChangesAsync();
 
         return _mapper.Map<ClientBranchDto>(branch);
     }
 
     public async Task<ExternalWorkerDto> AddExternalWorkerToClientAsync(Guid clientId, ExternalWorkerCreateDto workerDto)
     {
-        // Verify client exists
-        var client = await _clientRepository.GetByIdAsync(clientId);
-        if (client == null)
+        var clientExists = await _context.Clients.AnyAsync(c => c.Id == clientId);
+        if (!clientExists)
         {
             throw new InvalidOperationException($"Client with ID {clientId} not found");
         }
 
-        // Create external worker
         var worker = CreateExternalWorkerEntity(workerDto, clientId, null);
 
-        // Note: Worker will be added through a dedicated external worker repository
-        // For now, we'll add it to the client's external workers collection
-        if (client.ExternalWorkers == null)
-        {
-            client.ExternalWorkers = new List<ExternalWorker>();
-        }
-        client.ExternalWorkers.Add(worker);
-        await _clientRepository.UpdateAsync(client);
+        _context.ExternalWorkers.Add(worker);
+        await _context.SaveChangesAsync();
 
         return _mapper.Map<ExternalWorkerDto>(worker);
     }
@@ -818,88 +675,222 @@ public class ClientService : IClientService
         };
     }
 
-    private Organization CreateOrganizationEntityFromUpdate(OrganizationUpdateDto dto, Guid? clientId, Guid? branchId)
+    // ===== MERGE HELPERS — update existing, add new, soft-delete removed =====
+
+    private void MergeOrganizations(
+        ICollection<Organization> existing, List<OrganizationUpdateDto>? incoming,
+        Guid? clientId, Guid? branchId)
     {
-        var organization = new Organization
+        incoming ??= new();
+        var existingById = existing.ToDictionary(o => o.Id);
+        var incomingIds = incoming.Where(o => o.Id.HasValue).Select(o => o.Id!.Value).ToHashSet();
+
+        foreach (var org in existing.Where(o => !incomingIds.Contains(o.Id)).ToList())
         {
-            Id = Guid.NewGuid(),
-            Name = dto.Name,
-            CardExpiringSoon = dto.CardExpiringSoon,
-            ClientId = clientId,
-            ClientBranchId = branchId
+            org.IsDeleted = true;
+            org.DeletedAt = DateTime.UtcNow;
+        }
+
+        foreach (var dto in incoming)
+        {
+            if (dto.Id.HasValue && existingById.TryGetValue(dto.Id.Value, out var org))
+            {
+                org.Name = dto.Name;
+                org.CardExpiringSoon = dto.CardExpiringSoon;
+                MergeRecords(org.Records, dto.Records, org.Id);
+                MergeLicenses(org.Licenses, dto.Licenses, org.Id);
+                MergeWorkers(org.Workers, dto.Workers, org.Id);
+                MergeCars(org.Cars, dto.Cars, org.Id);
+                MergeUsernames(org.Usernames, dto.Usernames, org.Id);
+            }
+            else
+            {
+                _context.Organizations.Add(NewOrganizationFromDto(dto, clientId, branchId));
+            }
+        }
+    }
+
+    private void MergeBranches(
+        ICollection<ClientBranch> existing, List<ClientBranchWithDetailsUpdateDto>? incoming,
+        Guid parentClientId)
+    {
+        incoming ??= new();
+        var existingById = existing.ToDictionary(b => b.Id);
+        var incomingIds = incoming.Where(b => b.Id.HasValue).Select(b => b.Id!.Value).ToHashSet();
+
+        foreach (var branch in existing.Where(b => !incomingIds.Contains(b.Id)).ToList())
+        {
+            foreach (var org in branch.Organizations) { org.IsDeleted = true; org.DeletedAt = DateTime.UtcNow; }
+            foreach (var w in branch.ExternalWorkers) { w.IsDeleted = true; w.DeletedAt = DateTime.UtcNow; }
+            branch.IsDeleted = true;
+            branch.DeletedAt = DateTime.UtcNow;
+        }
+
+        foreach (var dto in incoming)
+        {
+            if (dto.Id.HasValue && existingById.TryGetValue(dto.Id.Value, out var branch))
+            {
+                branch.Name = dto.Name;
+                branch.Email = dto.Email;
+                branch.PhoneNumber = dto.PhoneNumber;
+                branch.Classification = dto.Classification;
+                branch.Balance = dto.Balance;
+                branch.BranchType = dto.BranchType;
+                MergeOrganizations(branch.Organizations, dto.Organizations, null, branch.Id);
+                MergeExternalWorkers(branch.ExternalWorkers, dto.ExternalWorkers, null, branch.Id);
+            }
+            else
+            {
+                var branch2 = new ClientBranch
+                {
+                    Id = Guid.NewGuid(),
+                    Name = dto.Name, Email = dto.Email, PhoneNumber = dto.PhoneNumber,
+                    Classification = dto.Classification, Balance = dto.Balance,
+                    BranchType = dto.BranchType, ParentClientId = parentClientId
+                };
+                _context.ClientBranches.Add(branch2);
+                foreach (var orgDto in dto.Organizations ?? new())
+                    _context.Organizations.Add(NewOrganizationFromDto(orgDto, null, branch2.Id));
+                foreach (var wDto in dto.ExternalWorkers ?? new())
+                    _context.ExternalWorkers.Add(NewExternalWorkerFromDto(wDto, null, branch2.Id));
+            }
+        }
+    }
+
+    private void MergeExternalWorkers(
+        ICollection<ExternalWorker> existing, List<ExternalWorkerUpdateDto>? incoming,
+        Guid? clientId, Guid? branchId)
+    {
+        incoming ??= new();
+        var existingById = existing.ToDictionary(w => w.Id);
+        var incomingIds = incoming.Where(w => w.Id.HasValue).Select(w => w.Id!.Value).ToHashSet();
+
+        foreach (var w in existing.Where(w => !incomingIds.Contains(w.Id)).ToList())
+        {
+            w.IsDeleted = true;
+            w.DeletedAt = DateTime.UtcNow;
+        }
+
+        foreach (var dto in incoming)
+        {
+            if (dto.Id.HasValue && existingById.TryGetValue(dto.Id.Value, out var w))
+            {
+                w.Name = dto.Name;
+                w.WorkerType = dto.WorkerType;
+                w.ResidenceNumber = dto.ResidenceNumber ?? string.Empty;
+                w.ResidenceImagePath = dto.ResidenceImagePath;
+                w.ExpiryDate = dto.ExpiryDate ?? w.ExpiryDate;
+            }
+            else
+            {
+                _context.ExternalWorkers.Add(NewExternalWorkerFromDto(dto, clientId, branchId));
+            }
+        }
+    }
+
+    private void MergeRecords(ICollection<OrganizationRecord> existing, List<OrganizationRecordUpdateItemDto>? incoming, Guid orgId)
+    {
+        incoming ??= new();
+        var existingById = existing.ToDictionary(r => r.Id);
+        var incomingIds = incoming.Where(r => r.Id.HasValue).Select(r => r.Id!.Value).ToHashSet();
+        foreach (var r in existing.Where(r => !incomingIds.Contains(r.Id)).ToList()) { r.IsDeleted = true; r.DeletedAt = DateTime.UtcNow; }
+        foreach (var dto in incoming)
+        {
+            if (dto.Id.HasValue && existingById.TryGetValue(dto.Id.Value, out var r))
+            { r.Name = dto.Name; r.Number = dto.Number; r.ExpiryDate = dto.ExpiryDate; r.ImagePath = dto.ImagePath; }
+            else
+            { _context.Set<OrganizationRecord>().Add(new OrganizationRecord { Id = Guid.NewGuid(), Name = dto.Name, Number = dto.Number, ExpiryDate = dto.ExpiryDate, ImagePath = dto.ImagePath, OrganizationId = orgId }); }
+        }
+    }
+
+    private void MergeLicenses(ICollection<OrganizationLicense> existing, List<OrganizationLicenseUpdateItemDto>? incoming, Guid orgId)
+    {
+        incoming ??= new();
+        var existingById = existing.ToDictionary(l => l.Id);
+        var incomingIds = incoming.Where(l => l.Id.HasValue).Select(l => l.Id!.Value).ToHashSet();
+        foreach (var l in existing.Where(l => !incomingIds.Contains(l.Id)).ToList()) { l.IsDeleted = true; l.DeletedAt = DateTime.UtcNow; }
+        foreach (var dto in incoming)
+        {
+            if (dto.Id.HasValue && existingById.TryGetValue(dto.Id.Value, out var l))
+            { l.Name = dto.Name; l.Number = dto.Number; l.ExpiryDate = dto.ExpiryDate; l.ImagePath = dto.ImagePath; }
+            else
+            { _context.Set<OrganizationLicense>().Add(new OrganizationLicense { Id = Guid.NewGuid(), Name = dto.Name, Number = dto.Number, ExpiryDate = dto.ExpiryDate, ImagePath = dto.ImagePath, OrganizationId = orgId }); }
+        }
+    }
+
+    private void MergeWorkers(ICollection<OrganizationWorker> existing, List<OrganizationWorkerUpdateItemDto>? incoming, Guid orgId)
+    {
+        incoming ??= new();
+        var existingById = existing.ToDictionary(w => w.Id);
+        var incomingIds = incoming.Where(w => w.Id.HasValue).Select(w => w.Id!.Value).ToHashSet();
+        foreach (var w in existing.Where(w => !incomingIds.Contains(w.Id)).ToList()) { w.IsDeleted = true; w.DeletedAt = DateTime.UtcNow; }
+        foreach (var dto in incoming)
+        {
+            if (dto.Id.HasValue && existingById.TryGetValue(dto.Id.Value, out var w))
+            { w.Name = dto.Name; w.ResidenceNumber = dto.ResidenceNumber; w.ResidenceImagePath = dto.ResidenceImagePath; w.ExpiryDate = dto.ExpiryDate; }
+            else
+            { _context.Set<OrganizationWorker>().Add(new OrganizationWorker { Id = Guid.NewGuid(), Name = dto.Name, ResidenceNumber = dto.ResidenceNumber, ResidenceImagePath = dto.ResidenceImagePath, ExpiryDate = dto.ExpiryDate, OrganizationId = orgId }); }
+        }
+    }
+
+    private void MergeCars(ICollection<OrganizationCar> existing, List<OrganizationCarUpdateItemDto>? incoming, Guid orgId)
+    {
+        incoming ??= new();
+        var existingById = existing.ToDictionary(c => c.Id);
+        var incomingIds = incoming.Where(c => c.Id.HasValue).Select(c => c.Id!.Value).ToHashSet();
+        foreach (var c in existing.Where(c => !incomingIds.Contains(c.Id)).ToList()) { c.IsDeleted = true; c.DeletedAt = DateTime.UtcNow; }
+        foreach (var dto in incoming)
+        {
+            if (dto.Id.HasValue && existingById.TryGetValue(dto.Id.Value, out var c))
+            { c.PlateNumber = dto.PlateNumber; c.Color = dto.Color; c.SerialNumber = dto.SerialNumber; c.ImagePath = dto.ImagePath; c.OperatingCardExpiry = dto.OperatingCardExpiry; }
+            else
+            { _context.Set<OrganizationCar>().Add(new OrganizationCar { Id = Guid.NewGuid(), PlateNumber = dto.PlateNumber, Color = dto.Color, SerialNumber = dto.SerialNumber, ImagePath = dto.ImagePath, OperatingCardExpiry = dto.OperatingCardExpiry, OrganizationId = orgId }); }
+        }
+    }
+
+    private void MergeUsernames(ICollection<OrganizationUsername> existing, List<OrganizationUsernameUpdateItemDto>? incoming, Guid orgId)
+    {
+        incoming ??= new();
+        var existingById = existing.ToDictionary(u => u.Id);
+        var incomingIds = incoming.Where(u => u.Id.HasValue).Select(u => u.Id!.Value).ToHashSet();
+        foreach (var u in existing.Where(u => !incomingIds.Contains(u.Id)).ToList()) { u.IsDeleted = true; u.DeletedAt = DateTime.UtcNow; }
+        foreach (var dto in incoming)
+        {
+            if (dto.Id.HasValue && existingById.TryGetValue(dto.Id.Value, out var u))
+            { u.SiteName = dto.SiteName; u.Username = dto.Username; u.Password = _passwordEncryption.Encrypt(dto.Password); }
+            else
+            { _context.Set<OrganizationUsername>().Add(new OrganizationUsername { Id = Guid.NewGuid(), SiteName = dto.SiteName, Username = dto.Username, Password = _passwordEncryption.Encrypt(dto.Password), OrganizationId = orgId }); }
+        }
+    }
+
+    private Organization NewOrganizationFromDto(OrganizationUpdateDto dto, Guid? clientId, Guid? branchId)
+    {
+        var org = new Organization
+        {
+            Id = Guid.NewGuid(), Name = dto.Name, CardExpiringSoon = dto.CardExpiringSoon,
+            ClientId = clientId, ClientBranchId = branchId
         };
+        if (dto.Records?.Any() == true)
+            org.Records = dto.Records.Select(r => new OrganizationRecord { Id = Guid.NewGuid(), Name = r.Name, Number = r.Number, ExpiryDate = r.ExpiryDate, ImagePath = r.ImagePath, OrganizationId = org.Id }).ToList();
+        if (dto.Licenses?.Any() == true)
+            org.Licenses = dto.Licenses.Select(l => new OrganizationLicense { Id = Guid.NewGuid(), Name = l.Name, Number = l.Number, ExpiryDate = l.ExpiryDate, ImagePath = l.ImagePath, OrganizationId = org.Id }).ToList();
+        if (dto.Workers?.Any() == true)
+            org.Workers = dto.Workers.Select(w => new OrganizationWorker { Id = Guid.NewGuid(), Name = w.Name, ResidenceNumber = w.ResidenceNumber, ResidenceImagePath = w.ResidenceImagePath, ExpiryDate = w.ExpiryDate, OrganizationId = org.Id }).ToList();
+        if (dto.Cars?.Any() == true)
+            org.Cars = dto.Cars.Select(c => new OrganizationCar { Id = Guid.NewGuid(), PlateNumber = c.PlateNumber, Color = c.Color, SerialNumber = c.SerialNumber, ImagePath = c.ImagePath, OperatingCardExpiry = c.OperatingCardExpiry, OrganizationId = org.Id }).ToList();
+        if (dto.Usernames?.Any() == true)
+            org.Usernames = dto.Usernames.Select(u => new OrganizationUsername { Id = Guid.NewGuid(), SiteName = u.SiteName, Username = u.Username, Password = _passwordEncryption.Encrypt(u.Password), OrganizationId = org.Id }).ToList();
+        return org;
+    }
 
-        // Create organization records
-        if (dto.Records != null && dto.Records.Any())
+    private ExternalWorker NewExternalWorkerFromDto(ExternalWorkerUpdateDto dto, Guid? clientId, Guid? branchId)
+    {
+        return new ExternalWorker
         {
-            organization.Records = dto.Records.Select(recordDto => new OrganizationRecord
-            {
-                Id = Guid.NewGuid(),
-                Name = recordDto.Name,
-                Number = recordDto.Number,
-                ExpiryDate = recordDto.ExpiryDate,
-                ImagePath = recordDto.ImagePath,
-                OrganizationId = organization.Id
-            }).ToList();
-        }
-
-        // Create organization licenses
-        if (dto.Licenses != null && dto.Licenses.Any())
-        {
-            organization.Licenses = dto.Licenses.Select(licenseDto => new OrganizationLicense
-            {
-                Id = Guid.NewGuid(),
-                Name = licenseDto.Name,
-                Number = licenseDto.Number,
-                ExpiryDate = licenseDto.ExpiryDate,
-                ImagePath = licenseDto.ImagePath,
-                OrganizationId = organization.Id
-            }).ToList();
-        }
-
-        // Create organization workers
-        if (dto.Workers != null && dto.Workers.Any())
-        {
-            organization.Workers = dto.Workers.Select(workerDto => new OrganizationWorker
-            {
-                Id = Guid.NewGuid(),
-                Name = workerDto.Name,
-                ResidenceNumber = workerDto.ResidenceNumber,
-                ResidenceImagePath = workerDto.ResidenceImagePath,
-                ExpiryDate = workerDto.ExpiryDate,
-                OrganizationId = organization.Id
-            }).ToList();
-        }
-
-        // Create organization cars
-        if (dto.Cars != null && dto.Cars.Any())
-        {
-            organization.Cars = dto.Cars.Select(carDto => new OrganizationCar
-            {
-                Id = Guid.NewGuid(),
-                PlateNumber = carDto.PlateNumber,
-                Color = carDto.Color,
-                SerialNumber = carDto.SerialNumber,
-                ImagePath = carDto.ImagePath,
-                OperatingCardExpiry = carDto.OperatingCardExpiry,
-                OrganizationId = organization.Id
-            }).ToList();
-        }
-
-        // Create organization usernames (with password encryption)
-        if (dto.Usernames != null && dto.Usernames.Any())
-        {
-            organization.Usernames = dto.Usernames.Select(usernameDto => new OrganizationUsername
-            {
-                Id = Guid.NewGuid(),
-                SiteName = usernameDto.SiteName,
-                Username = usernameDto.Username,
-                Password = _passwordEncryption.Encrypt(usernameDto.Password),
-                OrganizationId = organization.Id
-            }).ToList();
-        }
-
-        return organization;
+            Id = Guid.NewGuid(), Name = dto.Name, WorkerType = dto.WorkerType,
+            ResidenceNumber = dto.ResidenceNumber ?? string.Empty, ResidenceImagePath = dto.ResidenceImagePath,
+            ExpiryDate = dto.ExpiryDate ?? DateTime.UtcNow.AddYears(1), ClientId = clientId, ClientBranchId = branchId
+        };
     }
 
     /// <summary>

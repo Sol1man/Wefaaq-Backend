@@ -46,17 +46,64 @@ public class OrganizationCreateDto
 /// </summary>
 public class OrganizationUpdateDto
 {
+    public Guid? Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool CardExpiringSoon { get; set; }
     public Guid? ClientId { get; set; }
     public Guid? ClientBranchId { get; set; }
 
     // Nested entities (records, licenses, workers, cars, usernames)
-    public List<OrganizationRecordCreateDto>? Records { get; set; }
-    public List<OrganizationLicenseCreateDto>? Licenses { get; set; }
-    public List<OrganizationWorkerCreateDto>? Workers { get; set; }
-    public List<OrganizationCarCreateDto>? Cars { get; set; }
-    public List<OrganizationUsernameCreateDto>? Usernames { get; set; }
+    public List<OrganizationRecordUpdateItemDto>? Records { get; set; }
+    public List<OrganizationLicenseUpdateItemDto>? Licenses { get; set; }
+    public List<OrganizationWorkerUpdateItemDto>? Workers { get; set; }
+    public List<OrganizationCarUpdateItemDto>? Cars { get; set; }
+    public List<OrganizationUsernameUpdateItemDto>? Usernames { get; set; }
+}
+
+// Update-item DTOs with optional Id for merge (null = new, populated = existing)
+public class OrganizationRecordUpdateItemDto
+{
+    public Guid? Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Number { get; set; } = string.Empty;
+    public DateTime ExpiryDate { get; set; }
+    public string? ImagePath { get; set; }
+}
+
+public class OrganizationLicenseUpdateItemDto
+{
+    public Guid? Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Number { get; set; } = string.Empty;
+    public DateTime ExpiryDate { get; set; }
+    public string? ImagePath { get; set; }
+}
+
+public class OrganizationWorkerUpdateItemDto
+{
+    public Guid? Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string ResidenceNumber { get; set; } = string.Empty;
+    public string? ResidenceImagePath { get; set; }
+    public DateTime ExpiryDate { get; set; }
+}
+
+public class OrganizationCarUpdateItemDto
+{
+    public Guid? Id { get; set; }
+    public string PlateNumber { get; set; } = string.Empty;
+    public string Color { get; set; } = string.Empty;
+    public string SerialNumber { get; set; } = string.Empty;
+    public string? ImagePath { get; set; }
+    public DateTime OperatingCardExpiry { get; set; }
+}
+
+public class OrganizationUsernameUpdateItemDto
+{
+    public Guid? Id { get; set; }
+    public string SiteName { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
 }
 
 /// <summary>

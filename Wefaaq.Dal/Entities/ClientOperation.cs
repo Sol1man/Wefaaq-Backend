@@ -45,7 +45,7 @@ public class ClientOperation : ISoftDeletable
 
     // ── External person fields (when TargetType = ExternalPerson)
 
-    /// <summary>External person full name (اسم الشخص)</summary>
+    /// <summary>External person full name (اسم العميل الخارجي)</summary>
     [MaxLength(255)]
     public string? ExternalPersonName { get; set; }
 
