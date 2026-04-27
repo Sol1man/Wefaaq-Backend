@@ -1,0 +1,17 @@
+[variables]
+NIXPACKS_NO_MUSL = "1"
+
+[phases.setup]
+nixPkgs = ["dotnet-sdk_8"]
+
+[phases.install]
+cmds = ["dotnet --version"]
+
+[phases.build]
+cmds = [
+  "dotnet restore Wefaaq.Api/Wefaaq.Api.csproj",
+  "dotnet publish Wefaaq.Api/Wefaaq.Api.csproj -c Release -o out"
+]
+
+[start]
+cmd = "cd out && dotnet Wefaaq.Api.dll"
