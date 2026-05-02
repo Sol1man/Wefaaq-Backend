@@ -96,6 +96,16 @@ public class WefaaqContext : DbContext
             // Index for email uniqueness
             entity.HasIndex(e => e.Email).IsUnique();
 
+            // Optional assignment to a user (admin or normal user).
+            // SetNull on user delete so a removed user simply releases their clients.
+            entity.HasOne(e => e.AssignedUser)
+                .WithMany(u => u.AssignedClients)
+                .HasForeignKey(e => e.AssignedUserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+
+            entity.HasIndex(e => e.AssignedUserId);
+
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);
         });

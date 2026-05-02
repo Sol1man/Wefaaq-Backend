@@ -30,6 +30,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
     {
         return DbSet
             .AsSplitQuery()
+            .Include(c => c.AssignedUser)
             .Include(c => c.Organizations)
                 .ThenInclude(o => o.Records)
             .Include(c => c.Organizations)

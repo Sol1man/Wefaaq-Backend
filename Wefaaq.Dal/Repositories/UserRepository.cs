@@ -47,4 +47,16 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             await Context.SaveChangesAsync();
         }
     }
+
+    /// <summary>
+    /// Get all users with their role joined.
+    /// </summary>
+    public async Task<IEnumerable<User>> GetAllWithRolesAsync()
+    {
+        return await Context.Users
+            .AsNoTracking()
+            .Include(u => u.Role)
+            .OrderBy(u => u.Name)
+            .ToListAsync();
+    }
 }

@@ -118,4 +118,10 @@ public interface IClientService
     /// <param name="workerDto">External worker creation data</param>
     /// <returns>Created external worker DTO</returns>
     Task<ExternalWorkerDto> AddExternalWorkerToClientAsync(Guid clientId, ExternalWorkerCreateDto workerDto);
+
+    /// <summary>
+    /// Assign a client to a user (admin-only). Pass <c>null</c> to unassign.
+    /// </summary>
+    /// <returns>Updated client DTO, or null if the client doesn't exist.</returns>
+    Task<ClientDto?> AssignToUserAsync(Guid clientId, int? userId);
 }

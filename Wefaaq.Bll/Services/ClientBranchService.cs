@@ -21,6 +21,7 @@ public class ClientBranchService : IClientBranchService
     private readonly IValidator<ClientBranchCreateDto> _createValidator;
     private readonly IValidator<ClientBranchUpdateDto> _updateValidator;
     private readonly IPasswordEncryptionService _passwordEncryption;
+    private readonly IAccessControlService _access;
 
     public ClientBranchService(
         IGenericRepository<ClientBranch> branchRepository,
@@ -29,7 +30,8 @@ public class ClientBranchService : IClientBranchService
         IMapper mapper,
         IValidator<ClientBranchCreateDto> createValidator,
         IValidator<ClientBranchUpdateDto> updateValidator,
-        IPasswordEncryptionService passwordEncryption)
+        IPasswordEncryptionService passwordEncryption,
+        IAccessControlService access)
     {
         _branchRepository = branchRepository;
         _clientRepository = clientRepository;
@@ -38,21 +40,25 @@ public class ClientBranchService : IClientBranchService
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _passwordEncryption = passwordEncryption;
+        _access = access;
     }
 
     public async Task<IEnumerable<ClientBranchDto>> GetAllAsync()
     {
-        var branches = await _context.ClientBranches
+        var query = _context.ClientBranches
             .Include(b => b.ParentClient)
             .Include(b => b.Organizations)
             .Include(b => b.ExternalWorkers)
-            .ToListAsync();
+            .AsQueryable();
 
+        var branches = await _access.FilterBranches(query).ToListAsync();
         return _mapper.Map<IEnumerable<ClientBranchDto>>(branches);
     }
 
     public async Task<ClientBranchDto?> GetByIdAsync(Guid id)
     {
+        if (!await _access.CanAccessBranchAsync(id)) return null;
+
         var branch = await _context.ClientBranches
             .Include(b => b.ParentClient)
             .FirstOrDefaultAsync(b => b.Id == id);
@@ -62,6 +68,8 @@ public class ClientBranchService : IClientBranchService
 
     public async Task<ClientBranchDto?> GetWithDetailsAsync(Guid id)
     {
+        if (!await _access.CanAccessBranchAsync(id)) return null;
+
         var branch = await _context.ClientBranches
             .Include(b => b.ParentClient)
             .Include(b => b.Organizations)
@@ -73,6 +81,9 @@ public class ClientBranchService : IClientBranchService
 
     public async Task<IEnumerable<ClientBranchDto>> GetByClientIdAsync(Guid clientId)
     {
+        if (!await _access.CanAccessClientAsync(clientId))
+            return Enumerable.Empty<ClientBranchDto>();
+
         var branches = await _context.ClientBranches
             .Include(b => b.ParentClient)
             .Include(b => b.Organizations)
@@ -97,6 +108,9 @@ public class ClientBranchService : IClientBranchService
             throw new InvalidOperationException("Parent client ID is required when creating a branch directly");
         }
 
+        if (!await _access.CanAccessClientAsync(branchCreateDto.ParentClientId.Value))
+            throw new UnauthorizedAccessException("Parent client is not assigned to current user");
+
         // Verify parent client exists
         var parentClient = await _clientRepository.GetByIdAsync(branchCreateDto.ParentClientId.Value);
         if (parentClient == null)
@@ -120,13 +134,19 @@ public class ClientBranchService : IClientBranchService
             throw new ValidationException(validationResult.Errors);
         }
 
+        if (!await _access.CanAccessBranchAsync(id))
+            throw new UnauthorizedAccessException("Branch is not assigned to current user");
+
         var existingBranch = await _branchRepository.GetByIdAsync(id);
         if (existingBranch == null)
         {
             return null;
         }
 
-        // Verify parent client exists
+        // Verify parent client exists and is accessible (in case of reparenting)
+        if (!await _access.CanAccessClientAsync(branchUpdateDto.ParentClientId))
+            throw new UnauthorizedAccessException("Target parent client is not assigned to current user");
+
         var parentClient = await _clientRepository.GetByIdAsync(branchUpdateDto.ParentClientId);
         if (parentClient == null)
         {
@@ -148,6 +168,9 @@ public class ClientBranchService : IClientBranchService
 
     public async Task<OrganizationDto> AddOrganizationToBranchAsync(Guid branchId, OrganizationCreateDto organizationDto)
     {
+        if (!await _access.CanAccessBranchAsync(branchId))
+            throw new UnauthorizedAccessException("Branch is not assigned to current user");
+
         // Verify branch exists
         var branch = await _branchRepository.GetByIdAsync(branchId);
         if (branch == null)
@@ -254,6 +277,9 @@ public class ClientBranchService : IClientBranchService
 
     public async Task<ExternalWorkerDto> AddExternalWorkerToBranchAsync(Guid branchId, ExternalWorkerCreateDto workerDto)
     {
+        if (!await _access.CanAccessBranchAsync(branchId))
+            throw new UnauthorizedAccessException("Branch is not assigned to current user");
+
         // Verify branch exists
         var branch = await _branchRepository.GetByIdAsync(branchId);
         if (branch == null)

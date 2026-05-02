@@ -11,18 +11,20 @@ public class ClientOperationService : IClientOperationService
 {
     private readonly WefaaqContext _context;
     private readonly IMapper _mapper;
+    private readonly IAccessControlService _access;
 
-    public ClientOperationService(WefaaqContext context, IMapper mapper)
+    public ClientOperationService(WefaaqContext context, IMapper mapper, IAccessControlService access)
     {
         _context = context;
         _mapper = mapper;
+        _access = access;
     }
 
     // ── Queries ────────────────────────────────────────────────────────────────
 
     public async Task<IEnumerable<ClientOperationDto>> GetAllAsync()
     {
-        var ops = await BaseQuery()
+        var ops = await _access.FilterOperations(BaseQuery())
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
 
@@ -31,12 +33,15 @@ public class ClientOperationService : IClientOperationService
 
     public async Task<ClientOperationDto?> GetByIdAsync(Guid id)
     {
-        var op = await BaseQuery().FirstOrDefaultAsync(o => o.Id == id);
+        var op = await _access.FilterOperations(BaseQuery()).FirstOrDefaultAsync(o => o.Id == id);
         return op == null ? null : MapToDto(op);
     }
 
     public async Task<IEnumerable<ClientOperationDto>> GetByClientAsync(Guid clientId)
     {
+        if (!await _access.CanAccessClientAsync(clientId))
+            return Enumerable.Empty<ClientOperationDto>();
+
         // Collect IDs of all branches and organizations under this client
         var branchIds = await _context.ClientBranches
             .Where(b => b.ParentClientId == clientId)
@@ -61,6 +66,9 @@ public class ClientOperationService : IClientOperationService
 
     public async Task<IEnumerable<ClientOperationDto>> GetByBranchAsync(Guid branchId)
     {
+        if (!await _access.CanAccessBranchAsync(branchId))
+            return Enumerable.Empty<ClientOperationDto>();
+
         var orgIds = await _context.Organizations
             .Where(o => o.ClientBranchId == branchId)
             .Select(o => o.Id)
@@ -78,6 +86,9 @@ public class ClientOperationService : IClientOperationService
 
     public async Task<IEnumerable<ClientOperationDto>> GetByOrganizationAsync(Guid organizationId)
     {
+        if (!await _access.CanAccessOrganizationAsync(organizationId))
+            return Enumerable.Empty<ClientOperationDto>();
+
         var ops = await BaseQuery()
             .Where(o => o.OrganizationId == organizationId)
             .OrderByDescending(o => o.CreatedAt)
@@ -90,6 +101,13 @@ public class ClientOperationService : IClientOperationService
 
     public async Task<ClientOperationDto> CreateAsync(ClientOperationCreateDto dto, int performedByUserId)
     {
+        if (dto.ClientId.HasValue && !await _access.CanAccessClientAsync(dto.ClientId.Value))
+            throw new UnauthorizedAccessException("Client is not assigned to current user");
+        if (dto.ClientBranchId.HasValue && !await _access.CanAccessBranchAsync(dto.ClientBranchId.Value))
+            throw new UnauthorizedAccessException("Branch is not assigned to current user");
+        if (dto.OrganizationId.HasValue && !await _access.CanAccessOrganizationAsync(dto.OrganizationId.Value))
+            throw new UnauthorizedAccessException("Organization is not assigned to current user");
+
         var op = new ClientOperation
         {
             Id = Guid.NewGuid(),
@@ -114,7 +132,7 @@ public class ClientOperationService : IClientOperationService
 
     public async Task<ClientOperationDto?> UpdateAsync(Guid id, ClientOperationUpdateDto dto)
     {
-        var op = await BaseQuery().FirstOrDefaultAsync(o => o.Id == id);
+        var op = await _access.FilterOperations(BaseQuery()).FirstOrDefaultAsync(o => o.Id == id);
         if (op == null) return null;
 
         var previousStatus = op.Status;
@@ -140,7 +158,7 @@ public class ClientOperationService : IClientOperationService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var op = await _context.ClientOperations.FindAsync(id);
+        var op = await _access.FilterOperations(_context.ClientOperations).FirstOrDefaultAsync(o => o.Id == id);
         if (op == null) return false;
 
         op.IsDeleted = true;

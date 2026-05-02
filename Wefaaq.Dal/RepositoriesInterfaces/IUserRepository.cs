@@ -21,4 +21,9 @@ public interface IUserRepository : IGenericRepository<User>
     /// Update last login timestamp
     /// </summary>
     Task UpdateLastLoginAsync(int userId);
+
+    /// <summary>
+    /// Get all users with their role joined.
+    /// </summary>
+    Task<IEnumerable<User>> GetAllWithRolesAsync();
 }

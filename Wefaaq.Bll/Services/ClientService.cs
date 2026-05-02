@@ -23,6 +23,7 @@ public class ClientService : IClientService
     private readonly IValidator<ClientWithOrganizationsCreateDto> _createWithOrgsValidator;
     private readonly IValidator<ClientWithOrganizationsUpdateDto> _updateWithOrgsValidator;
     private readonly IPasswordEncryptionService _passwordEncryption;
+    private readonly IAccessControlService _access;
 
     public ClientService(
         IClientRepository clientRepository,
@@ -33,7 +34,8 @@ public class ClientService : IClientService
         IValidator<ClientUpdateDto> updateValidator,
         IValidator<ClientWithOrganizationsCreateDto> createWithOrgsValidator,
         IValidator<ClientWithOrganizationsUpdateDto> updateWithOrgsValidator,
-        IPasswordEncryptionService passwordEncryption)
+        IPasswordEncryptionService passwordEncryption,
+        IAccessControlService access)
     {
         _clientRepository = clientRepository;
         _organizationRepository = organizationRepository;
@@ -44,17 +46,22 @@ public class ClientService : IClientService
         _createWithOrgsValidator = createWithOrgsValidator;
         _updateWithOrgsValidator = updateWithOrgsValidator;
         _passwordEncryption = passwordEncryption;
+        _access = access;
     }
 
     public async Task<IEnumerable<ClientDto>> GetAllAsync()
     {
-        var clients = await _clientRepository.GetAllAsync();
+        var clients = await _access
+            .FilterClients(_context.Clients.AsNoTracking().Include(c => c.AssignedUser))
+            .ToListAsync();
         return _mapper.Map<IEnumerable<ClientDto>>(clients);
     }
 
     public async Task<ClientDto?> GetByIdAsync(Guid id)
     {
-        var client = await _clientRepository.GetByIdAsync(id);
+        var client = await _access
+            .FilterClients(_context.Clients.AsNoTracking().Include(c => c.AssignedUser))
+            .FirstOrDefaultAsync(c => c.Id == id);
         if (client == null) return null;
 
         var clientDto = _mapper.Map<ClientDto>(client);
@@ -106,6 +113,9 @@ public class ClientService : IClientService
             throw new ValidationException(validationResult.Errors);
         }
 
+        if (!await _access.CanAccessClientAsync(id))
+            throw new UnauthorizedAccessException("Client is not assigned to current user");
+
         var existingClient = await _clientRepository.GetByIdAsync(id);
         if (existingClient == null)
         {
@@ -143,6 +153,8 @@ public class ClientService : IClientService
 
     public async Task<ClientDto?> GetWithOrganizationsAsync(Guid id)
     {
+        if (!await _access.CanAccessClientAsync(id)) return null;
+
         var client = await _clientRepository.GetWithOrganizationsReadOnlyAsync(id);
         if (client == null) return null;
 
@@ -153,13 +165,19 @@ public class ClientService : IClientService
 
     public async Task<IEnumerable<ClientDto>> GetCreditorsAsync()
     {
-        var clients = await _clientRepository.GetCreditorsAsync();
+        var clients = await _access
+            .FilterClients(_context.Clients.AsNoTracking())
+            .Where(c => c.Balance > 0)
+            .ToListAsync();
         return _mapper.Map<IEnumerable<ClientDto>>(clients);
     }
 
     public async Task<IEnumerable<ClientDto>> GetDebtorsAsync()
     {
-        var clients = await _clientRepository.GetDebtorsAsync();
+        var clients = await _access
+            .FilterClients(_context.Clients.AsNoTracking())
+            .Where(c => c.Balance < 0)
+            .ToListAsync();
         return _mapper.Map<IEnumerable<ClientDto>>(clients);
     }
 
@@ -299,6 +317,9 @@ public class ClientService : IClientService
         {
             throw new ValidationException(validationResult.Errors);
         }
+
+        if (!await _access.CanAccessClientAsync(id))
+            throw new UnauthorizedAccessException("Client is not assigned to current user");
 
         var existingClient = await _clientRepository.GetWithOrganizationsAsync(id);
         if (existingClient == null)
@@ -488,6 +509,9 @@ public class ClientService : IClientService
 
     public async Task<ClientDto?> EditClientWithDetailsAsync(Guid id, ClientWithDetailsUpdateDto dto)
     {
+        if (!await _access.CanAccessClientAsync(id))
+            throw new UnauthorizedAccessException("Client is not assigned to current user");
+
         var existingClient = await _clientRepository.GetWithOrganizationsAsync(id);
         if (existingClient == null)
         {
@@ -524,6 +548,9 @@ public class ClientService : IClientService
 
     public async Task<OrganizationDto> AddOrganizationToClientAsync(Guid clientId, OrganizationCreateDto organizationDto)
     {
+        if (!await _access.CanAccessClientAsync(clientId))
+            throw new UnauthorizedAccessException("Client is not assigned to current user");
+
         // Verify client exists
         var client = await _clientRepository.GetByIdAsync(clientId);
         if (client == null)
@@ -542,6 +569,9 @@ public class ClientService : IClientService
 
     public async Task<ClientBranchDto> AddBranchToClientAsync(Guid clientId, ClientBranchCreateDto branchDto)
     {
+        if (!await _access.CanAccessClientAsync(clientId))
+            throw new UnauthorizedAccessException("Client is not assigned to current user");
+
         var clientExists = await _context.Clients.AnyAsync(c => c.Id == clientId);
         if (!clientExists)
         {
@@ -560,6 +590,9 @@ public class ClientService : IClientService
 
     public async Task<ExternalWorkerDto> AddExternalWorkerToClientAsync(Guid clientId, ExternalWorkerCreateDto workerDto)
     {
+        if (!await _access.CanAccessClientAsync(clientId))
+            throw new UnauthorizedAccessException("Client is not assigned to current user");
+
         var clientExists = await _context.Clients.AnyAsync(c => c.Id == clientId);
         if (!clientExists)
         {
@@ -572,6 +605,28 @@ public class ClientService : IClientService
         await _context.SaveChangesAsync();
 
         return _mapper.Map<ExternalWorkerDto>(worker);
+    }
+
+    public async Task<ClientDto?> AssignToUserAsync(Guid clientId, int? userId)
+    {
+        var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
+        if (client == null) return null;
+
+        if (userId.HasValue)
+        {
+            var userExists = await _context.Users.AnyAsync(u => u.Id == userId.Value);
+            if (!userExists)
+                throw new InvalidOperationException($"User with ID {userId} not found");
+        }
+
+        client.AssignedUserId = userId;
+        await _context.SaveChangesAsync();
+
+        var reloaded = await _context.Clients
+            .AsNoTracking()
+            .Include(c => c.AssignedUser)
+            .FirstOrDefaultAsync(c => c.Id == clientId);
+        return _mapper.Map<ClientDto>(reloaded);
     }
 
     // ===== HELPER METHODS =====

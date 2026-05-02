@@ -47,7 +47,8 @@ public class ExceptionMiddleware
                 break;
 
             case UnauthorizedAccessException:
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                // Caller is authenticated but lacks permission for this resource
+                context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                 response.Message = exception.Message;
                 response.StatusCode = context.Response.StatusCode;
                 break;

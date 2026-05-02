@@ -17,6 +17,8 @@ public class ClientDto
     public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public int? AssignedUserId { get; set; }
+    public string? AssignedUserName { get; set; }
     public List<OrganizationDto> Organizations { get; set; } = new();
     public List<ExternalWorkerDto> ExternalWorkers { get; set; } = new();
     public List<ClientBranchDto> ClientBranches { get; set; } = new();
@@ -72,6 +74,14 @@ public class ClientWithOrganizationsUpdateDto
     public ClientClassification Classification { get; set; }
     public decimal Balance { get; set; }
     public List<OrganizationCreateDtoSimple> Organizations { get; set; } = new();
+}
+
+/// <summary>
+/// Request body for assigning a client to a user. Pass <c>UserId = null</c> to unassign.
+/// </summary>
+public class AssignClientRequestDto
+{
+    public int? UserId { get; set; }
 }
 
 /// <summary>

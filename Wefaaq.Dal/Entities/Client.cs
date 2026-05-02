@@ -66,6 +66,18 @@ public class Client : ISoftDeletable
     public DateTime? DeletedAt { get; set; }
 
     /// <summary>
+    /// Foreign key to the user this client is assigned to.
+    /// Null = unassigned (visible to admins only). Branches and organizations
+    /// inherit ownership from this assignment via their parent client.
+    /// </summary>
+    public int? AssignedUserId { get; set; }
+
+    /// <summary>
+    /// Navigation property to the assigned user.
+    /// </summary>
+    public virtual User? AssignedUser { get; set; }
+
+    /// <summary>
     /// One-to-many relationship with organizations
     /// </summary>
     public virtual ICollection<Organization> Organizations { get; set; } = new List<Organization>();

@@ -68,6 +68,7 @@ builder.Services.AddScoped<IExternalWorkerService, ExternalWorkerService>();
 builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
 builder.Services.AddScoped<IPasswordEncryptionService, PasswordEncryptionService>();
 builder.Services.AddScoped<IClientOperationService, ClientOperationService>();
+builder.Services.AddScoped<IAccessControlService, AccessControlService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -80,6 +81,10 @@ builder.Services.AddFirebaseAuthentication(builder.Configuration);
 
 // Add claims transformation for role injection
 builder.Services.AddScoped<IClaimsTransformation, RoleClaimsTransformation>();
+
+// Expose the current user (id + admin flag) to BLL services
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // Add authorization policies
 builder.Services.AddAuthorizationPolicies();

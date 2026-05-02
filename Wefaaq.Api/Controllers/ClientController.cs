@@ -360,6 +360,38 @@ public class ClientController : ControllerBase
 
     #endregion
 
+    #region Assignment
+
+    /// <summary>
+    /// Assign a client to a user, or unassign by passing <c>userId: null</c> (Admin only).
+    /// Branches and organizations belonging to the client inherit this assignment.
+    /// </summary>
+    [HttpPut("assign/{id}")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Assign(Guid id, [FromBody] AssignClientRequestDto request)
+    {
+        try
+        {
+            var client = await _clientService.AssignToUserAsync(id, request.UserId);
+            if (client == null)
+            {
+                return NotFound(new { message = $"Client with ID {id} not found" });
+            }
+            return Ok(client);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while assigning client {ClientId} to user {UserId}", id, request.UserId);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    #endregion
+
     #region Granular Operations (Add individual items)
 
     /// <summary>

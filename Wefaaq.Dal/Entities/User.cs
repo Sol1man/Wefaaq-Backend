@@ -72,4 +72,9 @@ public class User
     /// Last update timestamp
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Clients assigned to this user. Empty for admins who haven't claimed any.
+    /// </summary>
+    public virtual ICollection<Client> AssignedClients { get; set; } = new List<Client>();
 }

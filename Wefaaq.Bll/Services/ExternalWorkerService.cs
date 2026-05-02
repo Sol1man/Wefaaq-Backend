@@ -21,6 +21,7 @@ public class ExternalWorkerService : IExternalWorkerService
     private readonly IMapper _mapper;
     private readonly IValidator<ExternalWorkerCreateDto> _createValidator;
     private readonly IValidator<ExternalWorkerUpdateDto> _updateValidator;
+    private readonly IAccessControlService _access;
 
     public ExternalWorkerService(
         IGenericRepository<ExternalWorker> workerRepository,
@@ -29,7 +30,8 @@ public class ExternalWorkerService : IExternalWorkerService
         WefaaqContext context,
         IMapper mapper,
         IValidator<ExternalWorkerCreateDto> createValidator,
-        IValidator<ExternalWorkerUpdateDto> updateValidator)
+        IValidator<ExternalWorkerUpdateDto> updateValidator,
+        IAccessControlService access)
     {
         _workerRepository = workerRepository;
         _clientRepository = clientRepository;
@@ -38,23 +40,28 @@ public class ExternalWorkerService : IExternalWorkerService
         _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _access = access;
     }
 
     public async Task<IEnumerable<ExternalWorkerDto>> GetAllAsync()
     {
-        var workers = await _context.ExternalWorkers
+        var query = _context.ExternalWorkers
             .Include(w => w.Client)
             .Include(w => w.ClientBranch)
-            .ToListAsync();
+            .AsQueryable();
 
+        var workers = await _access.FilterExternalWorkers(query).ToListAsync();
         return _mapper.Map<IEnumerable<ExternalWorkerDto>>(workers);
     }
 
     public async Task<ExternalWorkerDto?> GetByIdAsync(Guid id)
     {
-        var worker = await _context.ExternalWorkers
+        var query = _context.ExternalWorkers
             .Include(w => w.Client)
             .Include(w => w.ClientBranch)
+            .AsQueryable();
+
+        var worker = await _access.FilterExternalWorkers(query)
             .FirstOrDefaultAsync(w => w.Id == id);
 
         return worker == null ? null : _mapper.Map<ExternalWorkerDto>(worker);
@@ -62,6 +69,9 @@ public class ExternalWorkerService : IExternalWorkerService
 
     public async Task<IEnumerable<ExternalWorkerDto>> GetByClientIdAsync(Guid clientId)
     {
+        if (!await _access.CanAccessClientAsync(clientId))
+            return Enumerable.Empty<ExternalWorkerDto>();
+
         var workers = await _context.ExternalWorkers
             .Include(w => w.Client)
             .Include(w => w.ClientBranch)
@@ -73,6 +83,9 @@ public class ExternalWorkerService : IExternalWorkerService
 
     public async Task<IEnumerable<ExternalWorkerDto>> GetByClientBranchIdAsync(Guid branchId)
     {
+        if (!await _access.CanAccessBranchAsync(branchId))
+            return Enumerable.Empty<ExternalWorkerDto>();
+
         var workers = await _context.ExternalWorkers
             .Include(w => w.Client)
             .Include(w => w.ClientBranch)
@@ -100,9 +113,12 @@ public class ExternalWorkerService : IExternalWorkerService
             throw new InvalidOperationException("External worker cannot belong to both a Client and a ClientBranch");
         }
 
-        // Verify client or branch exists
+        // Verify client or branch exists and is accessible
         if (workerCreateDto.ClientId.HasValue)
         {
+            if (!await _access.CanAccessClientAsync(workerCreateDto.ClientId.Value))
+                throw new UnauthorizedAccessException("Client is not assigned to current user");
+
             var client = await _clientRepository.GetByIdAsync(workerCreateDto.ClientId.Value);
             if (client == null)
             {
@@ -111,6 +127,9 @@ public class ExternalWorkerService : IExternalWorkerService
         }
         else if (workerCreateDto.ClientBranchId.HasValue)
         {
+            if (!await _access.CanAccessBranchAsync(workerCreateDto.ClientBranchId.Value))
+                throw new UnauthorizedAccessException("Branch is not assigned to current user");
+
             var branch = await _branchRepository.GetByIdAsync(workerCreateDto.ClientBranchId.Value);
             if (branch == null)
             {
@@ -139,6 +158,14 @@ public class ExternalWorkerService : IExternalWorkerService
             return null;
         }
 
+        // Caller must own the worker's CURRENT client/branch
+        var currentClientId = existingWorker.ClientId;
+        var currentBranchId = existingWorker.ClientBranchId;
+        if (currentClientId.HasValue && !await _access.CanAccessClientAsync(currentClientId.Value))
+            throw new UnauthorizedAccessException("Worker's client is not assigned to current user");
+        if (currentBranchId.HasValue && !await _access.CanAccessBranchAsync(currentBranchId.Value))
+            throw new UnauthorizedAccessException("Worker's branch is not assigned to current user");
+
         // Verify exactly one of ClientId or ClientBranchId is set
         if (!workerUpdateDto.ClientId.HasValue && !workerUpdateDto.ClientBranchId.HasValue)
         {
@@ -149,9 +176,12 @@ public class ExternalWorkerService : IExternalWorkerService
             throw new InvalidOperationException("External worker cannot belong to both a Client and a ClientBranch");
         }
 
-        // Verify client or branch exists
+        // Caller must also own the TARGET (in case the worker is being moved)
         if (workerUpdateDto.ClientId.HasValue)
         {
+            if (!await _access.CanAccessClientAsync(workerUpdateDto.ClientId.Value))
+                throw new UnauthorizedAccessException("Target client is not assigned to current user");
+
             var client = await _clientRepository.GetByIdAsync(workerUpdateDto.ClientId.Value);
             if (client == null)
             {
@@ -160,6 +190,9 @@ public class ExternalWorkerService : IExternalWorkerService
         }
         else if (workerUpdateDto.ClientBranchId.HasValue)
         {
+            if (!await _access.CanAccessBranchAsync(workerUpdateDto.ClientBranchId.Value))
+                throw new UnauthorizedAccessException("Target branch is not assigned to current user");
+
             var branch = await _branchRepository.GetByIdAsync(workerUpdateDto.ClientBranchId.Value);
             if (branch == null)
             {
@@ -175,6 +208,14 @@ public class ExternalWorkerService : IExternalWorkerService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
+        var existing = await _workerRepository.GetByIdAsync(id);
+        if (existing == null) return false;
+
+        if (existing.ClientId.HasValue && !await _access.CanAccessClientAsync(existing.ClientId.Value))
+            throw new UnauthorizedAccessException("Worker's client is not assigned to current user");
+        if (existing.ClientBranchId.HasValue && !await _access.CanAccessBranchAsync(existing.ClientBranchId.Value))
+            throw new UnauthorizedAccessException("Worker's branch is not assigned to current user");
+
         return await _workerRepository.DeleteAsync(id);
     }
 }

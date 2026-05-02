@@ -1,7 +1,9 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
+using Wefaaq.Dal;
 using Wefaaq.Dal.Entities;
 using Wefaaq.Dal.RepositoriesInterfaces;
 
@@ -14,35 +16,51 @@ public class OrganizationService : IOrganizationService
 {
     private readonly IOrganizationRepository _organizationRepository;
     private readonly IClientRepository _clientRepository;
+    private readonly WefaaqContext _context;
     private readonly IMapper _mapper;
     private readonly IValidator<OrganizationCreateDto> _createValidator;
     private readonly IValidator<OrganizationUpdateDto> _updateValidator;
     private readonly IPasswordEncryptionService _passwordEncryption;
+    private readonly IAccessControlService _access;
 
     public OrganizationService(
         IOrganizationRepository organizationRepository,
         IClientRepository clientRepository,
+        WefaaqContext context,
         IMapper mapper,
         IValidator<OrganizationCreateDto> createValidator,
         IValidator<OrganizationUpdateDto> updateValidator,
-        IPasswordEncryptionService passwordEncryption)
+        IPasswordEncryptionService passwordEncryption,
+        IAccessControlService access)
     {
         _organizationRepository = organizationRepository;
         _clientRepository = clientRepository;
+        _context = context;
         _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _passwordEncryption = passwordEncryption;
+        _access = access;
     }
 
     public async Task<IEnumerable<OrganizationDto>> GetAllAsync()
     {
-        var organizations = await _organizationRepository.GetAllAsync();
+        var query = _context.Organizations
+            .Include(o => o.Records)
+            .Include(o => o.Licenses)
+            .Include(o => o.Workers)
+            .Include(o => o.Cars)
+            .Include(o => o.Client)
+            .AsQueryable();
+
+        var organizations = await _access.FilterOrganizations(query).ToListAsync();
         return _mapper.Map<IEnumerable<OrganizationDto>>(organizations);
     }
 
     public async Task<OrganizationDto?> GetByIdAsync(Guid id)
     {
+        if (!await _access.CanAccessOrganizationAsync(id)) return null;
+
         var organization = await _organizationRepository.GetByIdAsync(id);
         if (organization == null) return null;
 
@@ -72,13 +90,20 @@ public class OrganizationService : IOrganizationService
         // Verify client or branch exists
         if (organizationCreateDto.ClientId.HasValue)
         {
+            if (!await _access.CanAccessClientAsync(organizationCreateDto.ClientId.Value))
+                throw new UnauthorizedAccessException("Client is not assigned to current user");
+
             var client = await _clientRepository.GetByIdAsync(organizationCreateDto.ClientId.Value);
             if (client == null)
             {
                 throw new InvalidOperationException($"Client with ID {organizationCreateDto.ClientId} not found");
             }
         }
-        // Note: ClientBranch verification would go here when ClientBranchRepository is available
+        else if (organizationCreateDto.ClientBranchId.HasValue)
+        {
+            if (!await _access.CanAccessBranchAsync(organizationCreateDto.ClientBranchId.Value))
+                throw new UnauthorizedAccessException("Client branch is not assigned to current user");
+        }
 
         var organization = _mapper.Map<Organization>(organizationCreateDto);
         organization.Id = Guid.NewGuid();
@@ -96,6 +121,9 @@ public class OrganizationService : IOrganizationService
         {
             throw new ValidationException(validationResult.Errors);
         }
+
+        if (!await _access.CanAccessOrganizationAsync(id))
+            throw new UnauthorizedAccessException("Organization is not assigned to current user");
 
         var existingOrganization = await _organizationRepository.GetByIdAsync(id);
         if (existingOrganization == null)
@@ -134,18 +162,28 @@ public class OrganizationService : IOrganizationService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
+        if (!await _access.CanAccessOrganizationAsync(id))
+            throw new UnauthorizedAccessException("Organization is not assigned to current user");
+
         return await _organizationRepository.DeleteAsync(id);
     }
 
     public async Task<OrganizationDto?> GetWithDetailsAsync(Guid id)
     {
+        if (!await _access.CanAccessOrganizationAsync(id)) return null;
+
         var organization = await _organizationRepository.GetWithDetailsAsync(id);
         return organization == null ? null : _mapper.Map<OrganizationDto>(organization);
     }
 
     public async Task<IEnumerable<OrganizationDto>> GetWithExpiringCardsAsync()
     {
-        var organizations = await _organizationRepository.GetWithExpiringCardsAsync();
+        var query = _context.Organizations
+            .Where(o => o.CardExpiringSoon)
+            .Include(o => o.Client)
+            .AsQueryable();
+
+        var organizations = await _access.FilterOrganizations(query).ToListAsync();
         return _mapper.Map<IEnumerable<OrganizationDto>>(organizations);
     }
 

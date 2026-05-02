@@ -15,7 +15,9 @@ public class MappingProfile : Profile
         CreateMap<Client, ClientDto>()
             .ForMember(dest => dest.Organizations, opt => opt.MapFrom(src => src.Organizations))
             .ForMember(dest => dest.ExternalWorkers, opt => opt.MapFrom(src => src.ExternalWorkers))
-            .ForMember(dest => dest.ClientBranches, opt => opt.MapFrom(src => src.ClientBranches));
+            .ForMember(dest => dest.ClientBranches, opt => opt.MapFrom(src => src.ClientBranches))
+            .ForMember(dest => dest.AssignedUserName,
+                opt => opt.MapFrom(src => src.AssignedUser != null ? src.AssignedUser.Name : null));
 
         CreateMap<ClientCreateDto, Client>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -23,6 +25,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.AssignedUserId, opt => opt.Ignore())
+            .ForMember(dest => dest.AssignedUser, opt => opt.Ignore())
             .ForMember(dest => dest.Organizations, opt => opt.Ignore())
             .ForMember(dest => dest.ExternalWorkers, opt => opt.Ignore())
             .ForMember(dest => dest.ClientBranches, opt => opt.Ignore());
@@ -33,6 +37,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.AssignedUserId, opt => opt.Ignore())
+            .ForMember(dest => dest.AssignedUser, opt => opt.Ignore())
             .ForMember(dest => dest.Organizations, opt => opt.Ignore())
             .ForMember(dest => dest.ExternalWorkers, opt => opt.Ignore())
             .ForMember(dest => dest.ClientBranches, opt => opt.Ignore());
