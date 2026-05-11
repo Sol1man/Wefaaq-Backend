@@ -27,6 +27,21 @@ public class UserPayment : ISoftDeletable
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
+    /// Payment type — Payment deducts from the user's account, Profit is recorded but does not deduct
+    /// </summary>
+    public UserPaymentType Type { get; set; } = UserPaymentType.Payment;
+
+    /// <summary>
+    /// Optional link from a Profit entry back to the Payment entry from the same client operation
+    /// </summary>
+    public Guid? RelatedPaymentId { get; set; }
+
+    /// <summary>
+    /// Navigation property to the related payment (only populated for Profit rows that link back to a Payment)
+    /// </summary>
+    public virtual UserPayment? RelatedPayment { get; set; }
+
+    /// <summary>
     /// User ID (foreign key)
     /// </summary>
     public int UserId { get; set; }

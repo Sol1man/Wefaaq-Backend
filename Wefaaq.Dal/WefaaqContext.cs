@@ -242,6 +242,8 @@ public class WefaaqContext : DbContext
             entity.Property(e => e.FirebaseUid).IsRequired().HasMaxLength(128);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.InitialAccountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
+            entity.Property(e => e.CurrentAccountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 
@@ -367,6 +369,7 @@ public class WefaaqContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Amount).HasColumnType("decimal(18,2)").IsRequired();
             entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Type).HasConversion<int>().HasDefaultValue(UserPaymentType.Payment);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 
@@ -376,9 +379,18 @@ public class WefaaqContext : DbContext
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Self-referencing optional link from a Profit entry to its parent Payment entry
+            entity.HasOne(e => e.RelatedPayment)
+                .WithMany()
+                .HasForeignKey(e => e.RelatedPaymentId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
             // Indexes
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.Type);
+            entity.HasIndex(e => e.RelatedPaymentId);
 
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);
