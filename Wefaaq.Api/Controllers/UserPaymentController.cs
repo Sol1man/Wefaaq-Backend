@@ -106,6 +106,36 @@ public class UserPaymentController : ControllerBase
     }
 
     /// <summary>
+    /// Create a combined operation entry (Payment, Profit, or both linked).
+    /// </summary>
+    [HttpPost("add-operation")]
+    [ProducesResponseType(typeof(IEnumerable<UserPaymentDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateOperation([FromBody] UserPaymentOperationCreateDto dto)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in claims" });
+            }
+
+            var rows = await _userPaymentService.CreateOperationAsync(userId.Value, dto);
+            return CreatedAtAction(nameof(GetMyPayments), rows);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = "Validation failed", errors = ex.Errors.Select(e => e.ErrorMessage) });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating operation");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get payments by date range (Admin only)
     /// </summary>
     /// <param name="from">Start date</param>

@@ -24,7 +24,7 @@ public class UserPaymentDto
 public class UserPaymentCreateDto
 {
     public decimal Amount { get; set; }
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public UserPaymentType Type { get; set; } = UserPaymentType.Payment;
     public Guid? RelatedPaymentId { get; set; }
 }
@@ -53,6 +53,17 @@ public class UserPaymentSummaryDto
     public decimal TodaysPayments { get; set; }
     public decimal TodaysProfit { get; set; }
     public decimal CurrentMonthPayments { get; set; }
+    public decimal CurrentMonthProfit { get; set; }
+}
+
+/// <summary>
+/// Combined-operation payload: a single client operation can produce a Payment row, a Profit row, or both linked together.
+/// </summary>
+public class UserPaymentOperationCreateDto
+{
+    public decimal? PaymentAmount { get; set; }
+    public decimal? ProfitAmount { get; set; }
+    public string? Description { get; set; }
 }
 
 /// <summary>

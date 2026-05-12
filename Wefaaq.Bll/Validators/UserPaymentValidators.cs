@@ -15,7 +15,6 @@ public class UserPaymentCreateDtoValidator : AbstractValidator<UserPaymentCreate
             .GreaterThan(0).WithMessage("Amount must be greater than 0 (المبلغ يجب أن يكون أكبر من صفر)");
 
         RuleFor(x => x.Description)
-            .NotEmpty().WithMessage("Description is required (الوصف مطلوب)")
             .MaximumLength(500).WithMessage("Description cannot exceed 500 characters (الوصف لا يمكن أن يتجاوز 500 حرف)");
 
         RuleFor(x => x.Type)

@@ -13,6 +13,11 @@ public interface IUserPaymentService
 
     Task<UserPaymentDto> CreateAsync(int userId, UserPaymentCreateDto dto);
 
+    /// <summary>
+    /// Combined client-operation entry: creates 1 or 2 linked rows (Payment, Profit, or both).
+    /// </summary>
+    Task<IEnumerable<UserPaymentDto>> CreateOperationAsync(int userId, UserPaymentOperationCreateDto dto);
+
     Task<IEnumerable<UserPaymentDto>> GetMyPaymentsAsync(int userId);
 
     Task<IEnumerable<UserPaymentDto>> GetPaymentsByDateRangeAsync(DateTime from, DateTime to);

@@ -81,7 +81,7 @@ public class UserPaymentService : IUserPaymentService
         {
             Id = Guid.NewGuid(),
             Amount = dto.Amount,
-            Description = dto.Description,
+            Description = dto.Description ?? string.Empty,
             Type = dto.Type,
             RelatedPaymentId = dto.Type == UserPaymentType.Profit ? dto.RelatedPaymentId : null,
             UserId = userId
@@ -218,11 +218,80 @@ public class UserPaymentService : IUserPaymentService
                     .Where(p => p.UserId == u.Id
                         && p.Type == UserPaymentType.Payment
                         && p.CreatedAt >= monthStart && p.CreatedAt < monthEnd)
+                    .Sum(p => (decimal?)p.Amount) ?? 0m,
+                CurrentMonthProfit = _context.UserPayments
+                    .Where(p => p.UserId == u.Id
+                        && p.Type == UserPaymentType.Profit
+                        && p.CreatedAt >= monthStart && p.CreatedAt < monthEnd)
                     .Sum(p => (decimal?)p.Amount) ?? 0m
             })
             .ToListAsync();
 
         return users;
+    }
+
+    public async Task<IEnumerable<UserPaymentDto>> CreateOperationAsync(int userId, UserPaymentOperationCreateDto dto)
+    {
+        var payment = (dto.PaymentAmount ?? 0m) > 0m ? dto.PaymentAmount!.Value : (decimal?)null;
+        var profit = (dto.ProfitAmount ?? 0m) > 0m ? dto.ProfitAmount!.Value : (decimal?)null;
+
+        if (payment == null && profit == null)
+        {
+            throw new ValidationException("At least one of payment amount or profit amount must be greater than zero (يجب أن يكون أحد المبلغين أكبر من صفر)");
+        }
+
+        var description = dto.Description ?? string.Empty;
+        if (description.Length > 500)
+        {
+            throw new ValidationException("Description cannot exceed 500 characters (الوصف لا يمكن أن يتجاوز 500 حرف)");
+        }
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId)
+            ?? throw new ValidationException("User not found (المستخدم غير موجود)");
+
+        var created = new List<UserPayment>();
+        UserPayment? paymentRow = null;
+
+        if (payment.HasValue)
+        {
+            paymentRow = new UserPayment
+            {
+                Id = Guid.NewGuid(),
+                Amount = payment.Value,
+                Description = description,
+                Type = UserPaymentType.Payment,
+                UserId = userId
+            };
+            _context.UserPayments.Add(paymentRow);
+            user.CurrentAccountAmount -= payment.Value;
+            created.Add(paymentRow);
+        }
+
+        if (profit.HasValue)
+        {
+            var profitRow = new UserPayment
+            {
+                Id = Guid.NewGuid(),
+                Amount = profit.Value,
+                Description = description,
+                Type = UserPaymentType.Profit,
+                // Link the profit to the payment when both are submitted together so they stay associated.
+                RelatedPaymentId = paymentRow?.Id,
+                UserId = userId
+            };
+            _context.UserPayments.Add(profitRow);
+            created.Add(profitRow);
+        }
+
+        await _context.SaveChangesAsync();
+
+        var ids = created.Select(c => c.Id).ToList();
+        var reloaded = await _context.UserPayments
+            .Include(p => p.User)
+            .Where(p => ids.Contains(p.Id))
+            .ToListAsync();
+
+        return _mapper.Map<IEnumerable<UserPaymentDto>>(reloaded);
     }
 
     public async Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal newInitialAmount)
