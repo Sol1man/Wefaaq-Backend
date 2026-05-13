@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Wefaaq.Dal.Conventions;
 using Wefaaq.Dal.Entities;
 
 namespace Wefaaq.Dal;
@@ -76,6 +77,16 @@ public class WefaaqContext : DbContext
     /// Client operations table (عمليات العملاء)
     /// </summary>
     public DbSet<ClientOperation> ClientOperations { get; set; }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        // Every DateTime / DateTime? column in the model is treated as UTC on read so callers
+        // get Kind=Utc instead of Unspecified — see UtcDateTimeConverter for the full rationale.
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcNullableDateTimeConverter>();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
