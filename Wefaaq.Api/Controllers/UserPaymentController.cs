@@ -211,7 +211,8 @@ public class UserPaymentController : ControllerBase
     }
 
     /// <summary>
-    /// Set/reset a user's daily account amount (Admin only). Sets InitialAccountAmount and resets CurrentAccountAmount to the same value.
+    /// Top up a user's account (Admin only). The amount is ADDED to both Initial and Current
+    /// balances (cumulative) and a UserPayment row of Type=Initial is logged for traceability.
     /// </summary>
     [HttpPut("set-initial-amount/{userId}")]
     [Authorize(Policy = "AdminOnly")]
@@ -223,21 +224,25 @@ public class UserPaymentController : ControllerBase
     {
         try
         {
-            if (dto.InitialAccountAmount < 0)
+            if (dto.InitialAccountAmount <= 0)
             {
-                return BadRequest(new { message = "InitialAccountAmount must be zero or positive" });
+                return BadRequest(new { message = "Top-up amount must be greater than zero" });
             }
 
-            var updated = await _userPaymentService.SetInitialAccountAmountAsync(userId, dto.InitialAccountAmount);
+            var updated = await _userPaymentService.SetInitialAccountAmountAsync(userId, dto.InitialAccountAmount, dto.Description);
             if (updated == null)
             {
                 return NotFound(new { message = $"User with ID {userId} not found" });
             }
             return Ok(updated);
         }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = "Validation failed", errors = ex.Errors.Select(e => e.ErrorMessage) });
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while setting initial account amount for user {UserId}", userId);
+            _logger.LogError(ex, "Error occurred while topping up user account for user {UserId}", userId);
             return BadRequest(new { message = ex.Message });
         }
     }

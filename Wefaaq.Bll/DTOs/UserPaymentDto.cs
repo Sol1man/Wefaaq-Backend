@@ -67,9 +67,11 @@ public class UserPaymentOperationCreateDto
 }
 
 /// <summary>
-/// Admin payload for setting/resetting a user's daily account amount
+/// Admin top-up payload. Cumulative: the amount is ADDED to the user's account balances and
+/// also logged as a UserPayment row of Type=Initial for traceability.
 /// </summary>
 public class UpdateUserAccountAmountDto
 {
     public decimal InitialAccountAmount { get; set; }
+    public string? Description { get; set; }
 }

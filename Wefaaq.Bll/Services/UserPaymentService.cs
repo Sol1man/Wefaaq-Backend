@@ -156,13 +156,23 @@ public class UserPaymentService : IUserPaymentService
             return false;
         }
 
-        // Reverse the balance impact of a deleted Payment so the running total stays consistent.
-        if (payment.Type == UserPaymentType.Payment)
+        // Reverse the balance impact of the deleted row so cumulative totals stay consistent.
+        // Payment: was a deduction → refund Current. Profit: no balance effect → no reversal.
+        // Initial: was a top-up → subtract from both Initial and Current.
+        if (payment.Type == UserPaymentType.Payment || payment.Type == UserPaymentType.Initial)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == payment.UserId);
             if (user != null)
             {
-                user.CurrentAccountAmount += payment.Amount;
+                if (payment.Type == UserPaymentType.Payment)
+                {
+                    user.CurrentAccountAmount += payment.Amount;
+                }
+                else // Initial
+                {
+                    user.InitialAccountAmount -= payment.Amount;
+                    user.CurrentAccountAmount -= payment.Amount;
+                }
             }
         }
 
@@ -189,11 +199,20 @@ public class UserPaymentService : IUserPaymentService
 
     public async Task<IEnumerable<UserPaymentSummaryDto>> GetUserSummariesAsync()
     {
-        var now = DateTime.UtcNow;
-        var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
-        var todayEnd = todayStart.AddDays(1);
-        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var monthEnd = monthStart.AddMonths(1);
+        // The "today" and "current month" cards must honor the user's business timezone
+        // (Asia/Riyadh, no DST). Computing boundaries against UTC midnight would shift the
+        // visible window by 3 hours and make the cards disagree with the frontend "Today"
+        // filter and with the user's wall clock. Storage stays UTC; only the boundary math
+        // needs the zone applied here.
+        var riyadh = TimeZoneInfo.FindSystemTimeZoneById("Asia/Riyadh");
+        var nowRiyadh = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, riyadh);
+        var todayStartRiyadh = new DateTime(nowRiyadh.Year, nowRiyadh.Month, nowRiyadh.Day, 0, 0, 0);
+        var monthStartRiyadh = new DateTime(nowRiyadh.Year, nowRiyadh.Month, 1, 0, 0, 0);
+
+        var todayStart = TimeZoneInfo.ConvertTimeToUtc(todayStartRiyadh, riyadh);
+        var todayEnd = TimeZoneInfo.ConvertTimeToUtc(todayStartRiyadh.AddDays(1), riyadh);
+        var monthStart = TimeZoneInfo.ConvertTimeToUtc(monthStartRiyadh, riyadh);
+        var monthEnd = TimeZoneInfo.ConvertTimeToUtc(monthStartRiyadh.AddMonths(1), riyadh);
 
         // Aggregate per user. Only Payment-type rows contribute to today/month totals (profit is excluded).
         var users = await _context.Users
@@ -294,8 +313,13 @@ public class UserPaymentService : IUserPaymentService
         return _mapper.Map<IEnumerable<UserPaymentDto>>(reloaded);
     }
 
-    public async Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal newInitialAmount)
+    public async Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal amountToAdd, string? description = null)
     {
+        if (amountToAdd <= 0)
+        {
+            throw new ValidationException("Top-up amount must be greater than zero (مبلغ الإضافة يجب أن يكون أكبر من صفر)");
+        }
+
         var user = await _context.Users
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Id == userId);
@@ -305,20 +329,22 @@ public class UserPaymentService : IUserPaymentService
             return null;
         }
 
-        // The admin sets the daily seed but Payment deductions made earlier today should still count —
-        // current = newInitial − sum of Payment-type entries since today's start.
-        var now = DateTime.UtcNow;
-        var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+        // Cumulative: the entered amount is added to the existing balances (it does NOT replace them).
+        // We also log a UserPayment row of Type=Initial so the top-up appears in the payment history
+        // alongside Payments and Profits, making the running balance fully traceable.
+        var topup = new UserPayment
+        {
+            Id = Guid.NewGuid(),
+            Amount = amountToAdd,
+            Description = description ?? string.Empty,
+            Type = UserPaymentType.Initial,
+            UserId = userId
+        };
+        _context.UserPayments.Add(topup);
 
-        var todaysSpend = await _context.UserPayments
-            .Where(p => p.UserId == userId
-                && p.Type == UserPaymentType.Payment
-                && p.CreatedAt >= todayStart)
-            .Select(p => (decimal?)p.Amount)
-            .SumAsync() ?? 0m;
+        user.InitialAccountAmount += amountToAdd;
+        user.CurrentAccountAmount += amountToAdd;
 
-        user.InitialAccountAmount = newInitialAmount;
-        user.CurrentAccountAmount = newInitialAmount - todaysSpend;
         await _context.SaveChangesAsync();
 
         return _mapper.Map<UserDto>(user);

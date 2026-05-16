@@ -41,8 +41,8 @@ public interface IUserPaymentService
     Task<IEnumerable<UserPaymentSummaryDto>> GetUserSummariesAsync();
 
     /// <summary>
-    /// Admin sets/resets a user's daily seed amount. Resets CurrentAccountAmount to the same value.
-    /// Returns the updated user, or null if not found.
+    /// Admin top-up. Cumulative: adds the amount to both Initial and Current balances and logs a
+    /// UserPayment row of Type=Initial. Returns the updated user, or null if not found.
     /// </summary>
-    Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal newInitialAmount);
+    Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal amountToAdd, string? description = null);
 }
