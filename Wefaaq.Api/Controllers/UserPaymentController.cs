@@ -86,6 +86,12 @@ public class UserPaymentController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
+            // traceId == HttpContext.TraceIdentifier — unique per HTTP request, lets us see at a
+            // glance whether two backend creates came from one POST (replay) or two POSTs (double-click).
+            _logger.LogInformation(
+                "[UserPayments] HTTP POST /add traceId={TraceId} userId={UserId} amount={Amount} ip={Ip}",
+                HttpContext.TraceIdentifier, userId, dto?.Amount, HttpContext.Connection.RemoteIpAddress?.ToString());
+
             if (userId == null)
             {
                 return Unauthorized(new { message = "User ID not found in claims" });

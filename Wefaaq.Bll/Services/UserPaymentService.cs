@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 using Wefaaq.Dal;
@@ -16,15 +17,18 @@ public class UserPaymentService : IUserPaymentService
     private readonly WefaaqContext _context;
     private readonly IMapper _mapper;
     private readonly IValidator<UserPaymentCreateDto> _createValidator;
+    private readonly ILogger<UserPaymentService> _logger;
 
     public UserPaymentService(
         WefaaqContext context,
         IMapper mapper,
-        IValidator<UserPaymentCreateDto> createValidator)
+        IValidator<UserPaymentCreateDto> createValidator,
+        ILogger<UserPaymentService> logger)
     {
         _context = context;
         _mapper = mapper;
         _createValidator = createValidator;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<UserPaymentDto>> GetAllAsync()
@@ -48,9 +52,16 @@ public class UserPaymentService : IUserPaymentService
 
     public async Task<UserPaymentDto> CreateAsync(int userId, UserPaymentCreateDto dto)
     {
+        _logger.LogInformation(
+            "[UserPayments] CreateAsync ENTRY userId={UserId} amount={Amount} descriptionLength={DescLen}",
+            userId, dto.Amount, dto.Description?.Length ?? 0);
+
         var validationResult = await _createValidator.ValidateAsync(dto);
         if (!validationResult.IsValid)
         {
+            _logger.LogWarning(
+                "[UserPayments] CreateAsync VALIDATION_FAILED userId={UserId} errors={Errors}",
+                userId, string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
             throw new ValidationException(validationResult.Errors);
         }
 
@@ -64,6 +75,10 @@ public class UserPaymentService : IUserPaymentService
 
         _context.UserPayments.Add(payment);
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "[UserPayments] CreateAsync SAVED paymentId={PaymentId} userId={UserId} amount={Amount}",
+            payment.Id, userId, payment.Amount);
 
         // Reload with user info
         var createdPayment = await _context.UserPayments
