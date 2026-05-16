@@ -72,4 +72,14 @@ public class User
     /// Last update timestamp
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Daily seed amount the admin allocates to the user (المبلغ الابتدائي)
+    /// </summary>
+    public decimal InitialAccountAmount { get; set; }
+
+    /// <summary>
+    /// Running balance: InitialAccountAmount minus the sum of Payment-type entries since it was last set
+    /// </summary>
+    public decimal CurrentAccountAmount { get; set; }
 }

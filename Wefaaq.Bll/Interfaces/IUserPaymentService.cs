@@ -7,68 +7,42 @@ namespace Wefaaq.Bll.Interfaces;
 /// </summary>
 public interface IUserPaymentService
 {
-    /// <summary>
-    /// Get all payments (Admin only)
-    /// </summary>
-    /// <returns>List of all payment DTOs with user info</returns>
     Task<IEnumerable<UserPaymentDto>> GetAllAsync();
 
-    /// <summary>
-    /// Get payment by ID
-    /// </summary>
-    /// <param name="id">Payment ID</param>
-    /// <returns>Payment DTO or null</returns>
     Task<UserPaymentDto?> GetByIdAsync(Guid id);
 
-    /// <summary>
-    /// Create a new payment for the current user
-    /// </summary>
-    /// <param name="userId">User ID creating the payment</param>
-    /// <param name="dto">Payment creation data</param>
-    /// <returns>Created payment DTO</returns>
     Task<UserPaymentDto> CreateAsync(int userId, UserPaymentCreateDto dto);
 
     /// <summary>
-    /// Get payments for a specific user
+    /// Combined client-operation entry: creates 1 or 2 linked rows (Payment, Profit, or both).
     /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <returns>List of user's payment DTOs</returns>
+    Task<IEnumerable<UserPaymentDto>> CreateOperationAsync(int userId, UserPaymentOperationCreateDto dto);
+
     Task<IEnumerable<UserPaymentDto>> GetMyPaymentsAsync(int userId);
 
-    /// <summary>
-    /// Get payments within a date range (Admin only)
-    /// </summary>
-    /// <param name="from">Start date</param>
-    /// <param name="to">End date</param>
-    /// <returns>List of payment DTOs within the date range</returns>
     Task<IEnumerable<UserPaymentDto>> GetPaymentsByDateRangeAsync(DateTime from, DateTime to);
 
-    /// <summary>
-    /// Get payments by user ID (Admin only)
-    /// </summary>
-    /// <param name="userId">User ID to filter by</param>
-    /// <returns>List of payment DTOs for the specified user</returns>
     Task<IEnumerable<UserPaymentDto>> GetPaymentsByUserAsync(int userId);
 
     /// <summary>
-    /// Delete a payment (Admin only - soft delete)
+    /// Get payments for a specific user within a date range — used by the user details page.
     /// </summary>
-    /// <param name="id">Payment ID</param>
-    /// <returns>True if deleted, false if not found</returns>
+    Task<IEnumerable<UserPaymentDto>> GetPaymentsByUserAndDateRangeAsync(int userId, DateTime from, DateTime to);
+
     Task<bool> DeleteAsync(Guid id);
 
-    /// <summary>
-    /// Get total payment amount for a date range
-    /// </summary>
-    /// <param name="from">Start date</param>
-    /// <param name="to">End date</param>
-    /// <returns>Total amount</returns>
     Task<decimal> GetTotalAmountByDateRangeAsync(DateTime from, DateTime to);
 
-    /// <summary>
-    /// Get total payment amount for a specific user
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <returns>Total amount</returns>
     Task<decimal> GetTotalAmountByUserAsync(int userId);
+
+    /// <summary>
+    /// Aggregated per-user view (one row per user) for the payments management page.
+    /// </summary>
+    Task<IEnumerable<UserPaymentSummaryDto>> GetUserSummariesAsync();
+
+    /// <summary>
+    /// Admin top-up. Cumulative: adds the amount to both Initial and Current balances and logs a
+    /// UserPayment row of Type=Initial. Returns the updated user, or null if not found.
+    /// </summary>
+    Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal amountToAdd, string? description = null);
 }

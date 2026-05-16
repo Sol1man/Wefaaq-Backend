@@ -112,6 +112,36 @@ public class UserPaymentController : ControllerBase
     }
 
     /// <summary>
+    /// Create a combined operation entry (Payment, Profit, or both linked).
+    /// </summary>
+    [HttpPost("add-operation")]
+    [ProducesResponseType(typeof(IEnumerable<UserPaymentDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateOperation([FromBody] UserPaymentOperationCreateDto dto)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in claims" });
+            }
+
+            var rows = await _userPaymentService.CreateOperationAsync(userId.Value, dto);
+            return CreatedAtAction(nameof(GetMyPayments), rows);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = "Validation failed", errors = ex.Errors.Select(e => e.ErrorMessage) });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating operation");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get payments by date range (Admin only)
     /// </summary>
     /// <param name="from">Start date</param>
@@ -137,25 +167,88 @@ public class UserPaymentController : ControllerBase
     }
 
     /// <summary>
-    /// Get payments by user ID (Admin only)
+    /// Get payments by user ID (Admin only). Optionally filter by date range.
     /// </summary>
     /// <param name="userId">User ID to filter by</param>
+    /// <param name="from">Optional start date</param>
+    /// <param name="to">Optional end date</param>
     /// <returns>List of payments for the specified user</returns>
     [HttpGet("by-user/{userId}")]
     [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(List<UserPaymentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetByUser(int userId)
+    public async Task<IActionResult> GetByUser(int userId, [FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null)
     {
         try
         {
-            var payments = await _userPaymentService.GetPaymentsByUserAsync(userId);
+            var payments = from.HasValue && to.HasValue
+                ? await _userPaymentService.GetPaymentsByUserAndDateRangeAsync(userId, from.Value, to.Value)
+                : await _userPaymentService.GetPaymentsByUserAsync(userId);
             return Ok(payments);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while getting payments by user {UserId}", userId);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get aggregated per-user summaries (Admin only). One row per user with account amounts and today/month payment totals.
+    /// </summary>
+    [HttpGet("user-summaries")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(typeof(List<UserPaymentSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetUserSummaries()
+    {
+        try
+        {
+            var summaries = await _userPaymentService.GetUserSummariesAsync();
+            return Ok(summaries);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while getting user payment summaries");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Top up a user's account (Admin only). The amount is ADDED to both Initial and Current
+    /// balances (cumulative) and a UserPayment row of Type=Initial is logged for traceability.
+    /// </summary>
+    [HttpPut("set-initial-amount/{userId}")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetInitialAccountAmount(int userId, [FromBody] UpdateUserAccountAmountDto dto)
+    {
+        try
+        {
+            if (dto.InitialAccountAmount <= 0)
+            {
+                return BadRequest(new { message = "Top-up amount must be greater than zero" });
+            }
+
+            var updated = await _userPaymentService.SetInitialAccountAmountAsync(userId, dto.InitialAccountAmount, dto.Description);
+            if (updated == null)
+            {
+                return NotFound(new { message = $"User with ID {userId} not found" });
+            }
+            return Ok(updated);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = "Validation failed", errors = ex.Errors.Select(e => e.ErrorMessage) });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while topping up user account for user {UserId}", userId);
             return BadRequest(new { message = ex.Message });
         }
     }
