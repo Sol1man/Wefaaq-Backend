@@ -230,8 +230,10 @@ public class UserPaymentService : IUserPaymentService
         var monthStart = TimeZoneInfo.ConvertTimeToUtc(monthStartRiyadh, riyadh);
         var monthEnd = TimeZoneInfo.ConvertTimeToUtc(monthStartRiyadh.AddMonths(1), riyadh);
 
-        // Aggregate per user. Only Payment-type rows contribute to today/month totals (profit is excluded).
+        // Aggregate per user — deactivated users are excluded so the payments page only lists
+        // active staff. Only Payment-type rows contribute to today/month totals (profit excluded).
         var users = await _context.Users
+            .Where(u => u.IsActive)
             .Select(u => new UserPaymentSummaryDto
             {
                 UserId = u.Id,
