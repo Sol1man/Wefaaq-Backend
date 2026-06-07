@@ -97,4 +97,13 @@ public enum OperationType
 
     /// <summary>اصدار رخصة</summary>
     IssueLicense = 31,
+
+    /// <summary>اصدار تأشيرة</summary>
+    IssueVisa = 32,
+
+    /// <summary>تفويض</summary>
+    Authorization = 33,
+
+    /// <summary>أخرى — نوع مخصص يكتبه المستخدم (CustomType يحمل النص)</summary>
+    Other = 34,
 }

@@ -9,6 +9,7 @@ public class ClientOperationDto
 {
     public Guid Id { get; set; }
     public OperationType Type { get; set; }
+    public string? CustomType { get; set; }
     public string TypeDisplay { get; set; } = string.Empty;
     public OperationTargetType TargetType { get; set; }
     public OperationStatus Status { get; set; }
@@ -39,6 +40,8 @@ public class ClientOperationDto
 public class ClientOperationCreateDto
 {
     public OperationType Type { get; set; }
+    /// <summary>Free-text label, required only when Type = Other (نوع مخصص)</summary>
+    public string? CustomType { get; set; }
     public OperationTargetType TargetType { get; set; }
     public decimal? Price { get; set; }
     public string? Notes { get; set; }
@@ -59,6 +62,8 @@ public class ClientOperationCreateDto
 public class ClientOperationUpdateDto
 {
     public OperationType Type { get; set; }
+    /// <summary>Free-text label, required only when Type = Other (نوع مخصص)</summary>
+    public string? CustomType { get; set; }
     public OperationStatus Status { get; set; }
     public decimal? Price { get; set; }
     public string? Notes { get; set; }

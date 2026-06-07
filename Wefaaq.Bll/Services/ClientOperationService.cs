@@ -94,6 +94,7 @@ public class ClientOperationService : IClientOperationService
         {
             Id = Guid.NewGuid(),
             Type = dto.Type,
+            CustomType = dto.Type == OperationType.Other ? dto.CustomType : null,
             TargetType = dto.TargetType,
             Status = OperationStatus.Pending,
             Price = dto.Price,
@@ -119,6 +120,7 @@ public class ClientOperationService : IClientOperationService
 
         var previousStatus = op.Status;
         op.Type = dto.Type;
+        op.CustomType = dto.Type == OperationType.Other ? dto.CustomType : null;
         op.Status = dto.Status;
         op.Price = dto.Price;
         op.Notes = dto.Notes;
@@ -196,7 +198,10 @@ public class ClientOperationService : IClientOperationService
     {
         Id = op.Id,
         Type = op.Type,
-        TypeDisplay = GetTypeDisplay(op.Type),
+        CustomType = op.CustomType,
+        TypeDisplay = op.Type == OperationType.Other
+            ? (string.IsNullOrWhiteSpace(op.CustomType) ? "أخرى" : op.CustomType)
+            : GetTypeDisplay(op.Type),
         TargetType = op.TargetType,
         Status = op.Status,
         Price = op.Price,
@@ -249,6 +254,9 @@ public class ClientOperationService : IClientOperationService
         OperationType.IssueCommercialRecord => "اصدار سجل تجاري",
         OperationType.RenewLicense => "تجديد رخصة",
         OperationType.IssueLicense => "اصدار رخصة",
+        OperationType.IssueVisa => "اصدار تأشيرة",
+        OperationType.Authorization => "تفويض",
+        OperationType.Other => "أخرى",
         _ => type.ToString(),
     };
 }

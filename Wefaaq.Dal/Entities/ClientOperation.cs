@@ -15,6 +15,10 @@ public class ClientOperation : ISoftDeletable
     /// <summary>Type of operation (نوع العملية)</summary>
     public OperationType Type { get; set; }
 
+    /// <summary>Free-text type label, used only when Type = Other (نوع مخصص يكتبه المستخدم)</summary>
+    [MaxLength(255)]
+    public string? CustomType { get; set; }
+
     /// <summary>Target entity type (نوع المستهدف)</summary>
     public OperationTargetType TargetType { get; set; }
 
