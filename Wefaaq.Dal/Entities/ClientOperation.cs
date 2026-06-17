@@ -12,8 +12,14 @@ public class ClientOperation : ISoftDeletable
     /// <summary>Unique identifier</summary>
     public Guid Id { get; set; }
 
-    /// <summary>Type of operation (نوع العملية)</summary>
-    public OperationType Type { get; set; }
+    /// <summary>
+    /// Record kind — a service performed for the client (debit) or a payment the client made (credit).
+    /// (نوع القيد)
+    /// </summary>
+    public OperationKind Kind { get; set; } = OperationKind.Service;
+
+    /// <summary>Type of operation (نوع العملية) — null for payment records (Kind = Payment)</summary>
+    public OperationType? Type { get; set; }
 
     /// <summary>Free-text type label, used only when Type = Other (نوع مخصص يكتبه المستخدم)</summary>
     [MaxLength(255)]
@@ -22,10 +28,10 @@ public class ClientOperation : ISoftDeletable
     /// <summary>Target entity type (نوع المستهدف)</summary>
     public OperationTargetType TargetType { get; set; }
 
-    /// <summary>Current status (الحالة)</summary>
-    public OperationStatus Status { get; set; } = OperationStatus.Pending;
-
-    /// <summary>Cost/price of the operation (التكلفة) — debited from target balance on completion</summary>
+    /// <summary>
+    /// Amount of the record (المبلغ). For a service it is the fee debited from the target balance;
+    /// for a payment it is the cash credited to the target balance. Applied immediately on creation.
+    /// </summary>
     public decimal? Price { get; set; }
 
     /// <summary>Optional notes (ملاحظات)</summary>

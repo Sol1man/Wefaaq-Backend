@@ -450,7 +450,7 @@ public class WefaaqContext : DbContext
             entity.HasIndex(e => e.ClientId);
             entity.HasIndex(e => e.ClientBranchId);
             entity.HasIndex(e => e.OrganizationId);
-            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.Kind);
             entity.HasIndex(e => e.Type);
             entity.HasIndex(e => e.CreatedAt);
 

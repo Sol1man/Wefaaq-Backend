@@ -23,10 +23,13 @@ public interface IClientOperationService
     /// <summary>Get operations for a specific organization</summary>
     Task<IEnumerable<ClientOperationDto>> GetByOrganizationAsync(Guid organizationId);
 
-    /// <summary>Create a new operation</summary>
+    /// <summary>Create a new service operation — debits the target balance immediately</summary>
     Task<ClientOperationDto> CreateAsync(ClientOperationCreateDto dto, int performedByUserId);
 
-    /// <summary>Update operation type, status, price, notes — triggers balance debit if status → Completed</summary>
+    /// <summary>Record a client payment — credits the target balance immediately</summary>
+    Task<ClientOperationDto> CreatePaymentAsync(ClientOperationPaymentCreateDto dto, int performedByUserId);
+
+    /// <summary>Update operation type, price, notes — re-applies the balance effect for any price change</summary>
     Task<ClientOperationDto?> UpdateAsync(Guid id, ClientOperationUpdateDto dto);
 
     /// <summary>Soft-delete an operation</summary>

@@ -93,10 +93,10 @@ public class ClientOperationService : IClientOperationService
         var op = new ClientOperation
         {
             Id = Guid.NewGuid(),
+            Kind = OperationKind.Service,
             Type = dto.Type,
             CustomType = dto.Type == OperationType.Other ? dto.CustomType : null,
             TargetType = dto.TargetType,
-            Status = OperationStatus.Pending,
             Price = dto.Price,
             Notes = dto.Notes,
             ClientId = dto.ClientId,
@@ -105,9 +105,44 @@ public class ClientOperationService : IClientOperationService
             ExternalPersonName = dto.ExternalPersonName,
             ExternalPersonIdNumber = dto.ExternalPersonIdNumber,
             PerformedByUserId = performedByUserId,
+            // Operations are completed the moment they are recorded.
+            CompletedAt = DateTime.UtcNow,
         };
 
         _context.ClientOperations.Add(op);
+
+        // A service debits the target balance immediately.
+        await AdjustBalanceAsync(op, BalanceEffect(op));
+
+        await _context.SaveChangesAsync();
+
+        return MapToDto(await BaseQuery().FirstAsync(o => o.Id == op.Id));
+    }
+
+    public async Task<ClientOperationDto> CreatePaymentAsync(ClientOperationPaymentCreateDto dto, int performedByUserId)
+    {
+        var op = new ClientOperation
+        {
+            Id = Guid.NewGuid(),
+            Kind = OperationKind.Payment,
+            Type = null,
+            TargetType = dto.TargetType,
+            Price = dto.Amount,
+            Notes = dto.Notes,
+            ClientId = dto.ClientId,
+            ClientBranchId = dto.ClientBranchId,
+            OrganizationId = dto.OrganizationId,
+            ExternalPersonName = dto.ExternalPersonName,
+            ExternalPersonIdNumber = dto.ExternalPersonIdNumber,
+            PerformedByUserId = performedByUserId,
+            CompletedAt = DateTime.UtcNow,
+        };
+
+        _context.ClientOperations.Add(op);
+
+        // A payment credits the target balance immediately.
+        await AdjustBalanceAsync(op, BalanceEffect(op));
+
         await _context.SaveChangesAsync();
 
         return MapToDto(await BaseQuery().FirstAsync(o => o.Id == op.Id));
@@ -118,22 +153,18 @@ public class ClientOperationService : IClientOperationService
         var op = await BaseQuery().FirstOrDefaultAsync(o => o.Id == id);
         if (op == null) return null;
 
-        var previousStatus = op.Status;
+        // Reverse the previous balance effect, apply the new one (price may have changed).
+        var previousEffect = BalanceEffect(op);
+
         op.Type = dto.Type;
         op.CustomType = dto.Type == OperationType.Other ? dto.CustomType : null;
-        op.Status = dto.Status;
         op.Price = dto.Price;
         op.Notes = dto.Notes;
 
-        // If transitioning to Completed, record timestamp and debit balance
-        if (previousStatus != OperationStatus.Completed && dto.Status == OperationStatus.Completed)
+        var delta = BalanceEffect(op) - previousEffect;
+        if (delta != 0)
         {
-            op.CompletedAt = DateTime.UtcNow;
-
-            if (dto.Price.HasValue && dto.Price.Value != 0)
-            {
-                await DebitBalanceAsync(op, dto.Price.Value);
-            }
+            await AdjustBalanceAsync(op, delta);
         }
 
         await _context.SaveChangesAsync();
@@ -144,6 +175,13 @@ public class ClientOperationService : IClientOperationService
     {
         var op = await _context.ClientOperations.FindAsync(id);
         if (op == null) return false;
+
+        // Undo this record's effect on the target balance before removing it.
+        var effect = BalanceEffect(op);
+        if (effect != 0)
+        {
+            await AdjustBalanceAsync(op, -effect);
+        }
 
         op.IsDeleted = true;
         op.DeletedAt = DateTime.UtcNow;
@@ -161,23 +199,35 @@ public class ClientOperationService : IClientOperationService
             .Include(o => o.PerformedByUser);
 
     /// <summary>
-    /// Debit the price from the appropriate balance:
+    /// Signed effect this record has on the target balance:
+    /// a service debits (negative), a payment credits (positive).
+    /// </summary>
+    private static decimal BalanceEffect(ClientOperation op)
+    {
+        var amount = op.Price ?? 0m;
+        return op.Kind == OperationKind.Payment ? amount : -amount;
+    }
+
+    /// <summary>
+    /// Add a signed amount to the appropriate balance (positive = credit, negative = debit):
     /// Client → Client.Balance, Branch → ClientBranch.Balance,
     /// Organization → its owner (Client or Branch).
     /// ExternalPerson → no balance touched.
     /// </summary>
-    private async Task DebitBalanceAsync(ClientOperation op, decimal amount)
+    private async Task AdjustBalanceAsync(ClientOperation op, decimal signedAmount)
     {
+        if (signedAmount == 0) return;
+
         switch (op.TargetType)
         {
             case OperationTargetType.Client when op.ClientId.HasValue:
                 var client = await _context.Clients.FindAsync(op.ClientId.Value);
-                if (client != null) client.Balance -= amount;
+                if (client != null) client.Balance += signedAmount;
                 break;
 
             case OperationTargetType.ClientBranch when op.ClientBranchId.HasValue:
                 var branch = await _context.ClientBranches.FindAsync(op.ClientBranchId.Value);
-                if (branch != null) branch.Balance -= amount;
+                if (branch != null) branch.Balance += signedAmount;
                 break;
 
             case OperationTargetType.Organization when op.OrganizationId.HasValue:
@@ -187,9 +237,9 @@ public class ClientOperationService : IClientOperationService
                     .FirstOrDefaultAsync(o => o.Id == op.OrganizationId.Value);
 
                 if (org?.Client != null)
-                    org.Client.Balance -= amount;
+                    org.Client.Balance += signedAmount;
                 else if (org?.ClientBranch != null)
-                    org.ClientBranch.Balance -= amount;
+                    org.ClientBranch.Balance += signedAmount;
                 break;
         }
     }
@@ -197,13 +247,11 @@ public class ClientOperationService : IClientOperationService
     private static ClientOperationDto MapToDto(ClientOperation op) => new()
     {
         Id = op.Id,
+        Kind = op.Kind,
         Type = op.Type,
         CustomType = op.CustomType,
-        TypeDisplay = op.Type == OperationType.Other
-            ? (string.IsNullOrWhiteSpace(op.CustomType) ? "أخرى" : op.CustomType)
-            : GetTypeDisplay(op.Type),
+        TypeDisplay = GetTypeDisplay(op),
         TargetType = op.TargetType,
-        Status = op.Status,
         Price = op.Price,
         Notes = op.Notes,
         ClientId = op.ClientId,
@@ -220,6 +268,21 @@ public class ClientOperationService : IClientOperationService
         CreatedAt = op.CreatedAt,
         UpdatedAt = op.UpdatedAt,
     };
+
+    /// <summary>Human-readable label for a record — payment, free-text "Other", or a known operation type.</summary>
+    private static string GetTypeDisplay(ClientOperation op)
+    {
+        if (op.Kind == OperationKind.Payment)
+            return "دفعة من العميل";
+
+        if (op.Type == null)
+            return string.Empty;
+
+        if (op.Type == OperationType.Other)
+            return string.IsNullOrWhiteSpace(op.CustomType) ? "أخرى" : op.CustomType;
+
+        return GetTypeDisplay(op.Type.Value);
+    }
 
     private static string GetTypeDisplay(OperationType type) => type switch
     {

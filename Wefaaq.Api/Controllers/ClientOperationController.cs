@@ -128,7 +128,28 @@ public class ClientOperationController : ControllerBase
         }
     }
 
-    /// <summary>Update an operation (status, price, notes)</summary>
+    /// <summary>Record a client payment (cash paid against fees) — credits the target balance</summary>
+    [HttpPost("add-payment")]
+    public async Task<IActionResult> CreatePayment([FromBody] ClientOperationPaymentCreateDto dto)
+    {
+        try
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized(new { message = "Cannot determine current user" });
+
+            var result = await _service.CreatePaymentAsync(dto, userId.Value);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error recording client payment");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>Update an operation (type, price, notes)</summary>
     [HttpPut("edit/{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] ClientOperationUpdateDto dto)
     {
