@@ -190,25 +190,25 @@ app.UseAutoWrapperConfig(apiVersion: "1.0");
 
 app.MapControllers();
 
-// Apply migrations on startup in every environment (so a master-push deploy migrates prod),
-// and seed sample data only in development.
-using (var scope = app.Services.CreateScope())
+// Apply migrations and seed data on startup in development only.
+// Production schema changes are applied manually via the SQL scripts in "docs assets".
+if (app.Environment.IsDevelopment())
 {
-    var db = scope.ServiceProvider.GetRequiredService<WefaaqContext>();
-    try
+    using (var scope = app.Services.CreateScope())
     {
-        db.Database.Migrate();
-
-        // Seed data (development only)
-        if (app.Environment.IsDevelopment())
+        var db = scope.ServiceProvider.GetRequiredService<WefaaqContext>();
+        try
         {
+            db.Database.Migrate();
+
+            // Seed data
             DataSeeder.SeedData(db);
         }
-    }
-    catch (Exception ex)
-    {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        }
     }
 }
 
