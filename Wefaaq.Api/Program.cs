@@ -190,24 +190,25 @@ app.UseAutoWrapperConfig(apiVersion: "1.0");
 
 app.MapControllers();
 
-// Apply migrations and seed data on startup (optional - remove in production)
-if (app.Environment.IsDevelopment())
+// Apply migrations on startup in every environment (so a master-push deploy migrates prod),
+// and seed sample data only in development.
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
+    var db = scope.ServiceProvider.GetRequiredService<WefaaqContext>();
+    try
     {
-        var db = scope.ServiceProvider.GetRequiredService<WefaaqContext>();
-        try
-        {
-            db.Database.Migrate();
+        db.Database.Migrate();
 
-            // Seed data
+        // Seed data (development only)
+        if (app.Environment.IsDevelopment())
+        {
             DataSeeder.SeedData(db);
         }
-        catch (Exception ex)
-        {
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
-        }
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
     }
 }
 
