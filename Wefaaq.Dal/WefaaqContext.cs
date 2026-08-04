@@ -255,6 +255,7 @@ public class WefaaqContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(255);
             entity.Property(e => e.InitialAccountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             entity.Property(e => e.CurrentAccountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
+            entity.Property(e => e.ProfitPercentage).HasColumnType("decimal(5,2)").HasDefaultValue(0m);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Wefaaq.Dal;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Wefaaq.Dal;
 namespace Wefaaq.Dal.Migrations
 {
     [DbContext(typeof(WefaaqContext))]
-    partial class WefaaqContextModelSnapshot : ModelSnapshot
+    [Migration("20260804120000_AddProfitPercentageToUser")]
+    partial class AddProfitPercentageToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

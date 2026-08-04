@@ -41,8 +41,16 @@ public interface IUserPaymentService
     Task<IEnumerable<UserPaymentSummaryDto>> GetUserSummariesAsync();
 
     /// <summary>
-    /// Admin top-up. Cumulative: adds the amount to both Initial and Current balances and logs a
-    /// UserPayment row of Type=Initial. Returns the updated user, or null if not found.
+    /// Aggregated summary for a single user — used by the user-facing payments page (self view).
+    /// Returns null if the user does not exist / is inactive.
     /// </summary>
-    Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal amountToAdd, string? description = null);
+    Task<UserPaymentSummaryDto?> GetUserSummaryAsync(int userId);
+
+    /// <summary>
+    /// Admin account update. When <paramref name="amountToAdd"/> &gt; 0 it is added to both Initial
+    /// and Current balances (cumulative) and logged as a UserPayment row of Type=Initial. When
+    /// <paramref name="profitPercentage"/> is supplied it replaces the user's profit-share percentage.
+    /// Returns the updated user, or null if not found.
+    /// </summary>
+    Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal amountToAdd, decimal? profitPercentage = null, string? description = null);
 }

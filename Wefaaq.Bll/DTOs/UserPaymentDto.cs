@@ -50,6 +50,8 @@ public class UserPaymentSummaryDto
     public string UserEmail { get; set; } = string.Empty;
     public decimal InitialAccountAmount { get; set; }
     public decimal CurrentAccountAmount { get; set; }
+    /// <summary>Profit share percentage (0-100) the admin allocates to this user.</summary>
+    public decimal ProfitPercentage { get; set; }
     public decimal TodaysPayments { get; set; }
     public decimal TodaysProfit { get; set; }
     public decimal CurrentMonthPayments { get; set; }
@@ -67,11 +69,16 @@ public class UserPaymentOperationCreateDto
 }
 
 /// <summary>
-/// Admin top-up payload. Cumulative: the amount is ADDED to the user's account balances and
-/// also logged as a UserPayment row of Type=Initial for traceability.
+/// Admin account-settings payload. The <see cref="InitialAccountAmount"/> (when &gt; 0) is ADDED
+/// to the user's balances and logged as a UserPayment row of Type=Initial. The optional
+/// <see cref="ProfitPercentage"/> (when supplied) replaces the user's profit-share percentage.
+/// At least one of the two must produce a change.
 /// </summary>
 public class UpdateUserAccountAmountDto
 {
+    /// <summary>Cumulative top-up amount. 0 = no top-up (used when only the percentage changes).</summary>
     public decimal InitialAccountAmount { get; set; }
+    /// <summary>New profit-share percentage (0-100). null = leave unchanged.</summary>
+    public decimal? ProfitPercentage { get; set; }
     public string? Description { get; set; }
 }

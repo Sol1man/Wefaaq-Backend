@@ -215,11 +215,22 @@ public class UserPaymentService : IUserPaymentService
 
     public async Task<IEnumerable<UserPaymentSummaryDto>> GetUserSummariesAsync()
     {
-        // The "today" and "current month" cards must honor the user's business timezone
-        // (Asia/Riyadh, no DST). Computing boundaries against UTC midnight would shift the
-        // visible window by 3 hours and make the cards disagree with the frontend "Today"
-        // filter and with the user's wall clock. Storage stays UTC; only the boundary math
-        // needs the zone applied here.
+        return await BuildSummariesQuery(_context.Users.Where(u => u.IsActive)).ToListAsync();
+    }
+
+    public async Task<UserPaymentSummaryDto?> GetUserSummaryAsync(int userId)
+    {
+        return await BuildSummariesQuery(_context.Users.Where(u => u.Id == userId))
+            .FirstOrDefaultAsync();
+    }
+
+    /// <summary>
+    /// Shared per-user summary projection. Used both for the admin list (all active users) and
+    /// the single-user self view. Today/month boundaries honor the business timezone (Asia/Riyadh,
+    /// no DST) so the cards agree with the frontend "Today" filter and the user's wall clock.
+    /// </summary>
+    private IQueryable<UserPaymentSummaryDto> BuildSummariesQuery(IQueryable<User> usersQuery)
+    {
         var riyadh = TimeZoneInfo.FindSystemTimeZoneById("Asia/Riyadh");
         var nowRiyadh = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, riyadh);
         var todayStartRiyadh = new DateTime(nowRiyadh.Year, nowRiyadh.Month, nowRiyadh.Day, 0, 0, 0);
@@ -230,10 +241,8 @@ public class UserPaymentService : IUserPaymentService
         var monthStart = TimeZoneInfo.ConvertTimeToUtc(monthStartRiyadh, riyadh);
         var monthEnd = TimeZoneInfo.ConvertTimeToUtc(monthStartRiyadh.AddMonths(1), riyadh);
 
-        // Aggregate per user — deactivated users are excluded so the payments page only lists
-        // active staff. Only Payment-type rows contribute to today/month totals (profit excluded).
-        var users = await _context.Users
-            .Where(u => u.IsActive)
+        // Only Payment-type rows contribute to today/month totals (profit excluded).
+        return usersQuery
             .Select(u => new UserPaymentSummaryDto
             {
                 UserId = u.Id,
@@ -241,6 +250,7 @@ public class UserPaymentService : IUserPaymentService
                 UserEmail = u.Email,
                 InitialAccountAmount = u.InitialAccountAmount,
                 CurrentAccountAmount = u.CurrentAccountAmount,
+                ProfitPercentage = u.ProfitPercentage,
                 TodaysPayments = _context.UserPayments
                     .Where(p => p.UserId == u.Id
                         && p.Type == UserPaymentType.Payment
@@ -261,10 +271,7 @@ public class UserPaymentService : IUserPaymentService
                         && p.Type == UserPaymentType.Profit
                         && p.CreatedAt >= monthStart && p.CreatedAt < monthEnd)
                     .Sum(p => (decimal?)p.Amount) ?? 0m
-            })
-            .ToListAsync();
-
-        return users;
+            });
     }
 
     public async Task<IEnumerable<UserPaymentDto>> CreateOperationAsync(int userId, UserPaymentOperationCreateDto dto)
@@ -331,11 +338,21 @@ public class UserPaymentService : IUserPaymentService
         return _mapper.Map<IEnumerable<UserPaymentDto>>(reloaded);
     }
 
-    public async Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal amountToAdd, string? description = null)
+    public async Task<UserDto?> SetInitialAccountAmountAsync(int userId, decimal amountToAdd, decimal? profitPercentage = null, string? description = null)
     {
-        if (amountToAdd <= 0)
+        if (amountToAdd < 0)
         {
-            throw new ValidationException("Top-up amount must be greater than zero (مبلغ الإضافة يجب أن يكون أكبر من صفر)");
+            throw new ValidationException("Top-up amount cannot be negative (مبلغ الإضافة لا يمكن أن يكون سالباً)");
+        }
+
+        if (profitPercentage.HasValue && (profitPercentage.Value < 0 || profitPercentage.Value > 100))
+        {
+            throw new ValidationException("Profit percentage must be between 0 and 100 (نسبة الأرباح يجب أن تكون بين 0 و 100)");
+        }
+
+        if (amountToAdd <= 0 && !profitPercentage.HasValue)
+        {
+            throw new ValidationException("Nothing to update: provide a top-up amount and/or a profit percentage (لا يوجد ما يتم تحديثه)");
         }
 
         var user = await _context.Users
@@ -350,18 +367,27 @@ public class UserPaymentService : IUserPaymentService
         // Cumulative: the entered amount is added to the existing balances (it does NOT replace them).
         // We also log a UserPayment row of Type=Initial so the top-up appears in the payment history
         // alongside Payments and Profits, making the running balance fully traceable.
-        var topup = new UserPayment
+        if (amountToAdd > 0)
         {
-            Id = Guid.NewGuid(),
-            Amount = amountToAdd,
-            Description = description ?? string.Empty,
-            Type = UserPaymentType.Initial,
-            UserId = userId
-        };
-        _context.UserPayments.Add(topup);
+            var topup = new UserPayment
+            {
+                Id = Guid.NewGuid(),
+                Amount = amountToAdd,
+                Description = description ?? string.Empty,
+                Type = UserPaymentType.Initial,
+                UserId = userId
+            };
+            _context.UserPayments.Add(topup);
 
-        user.InitialAccountAmount += amountToAdd;
-        user.CurrentAccountAmount += amountToAdd;
+            user.InitialAccountAmount += amountToAdd;
+            user.CurrentAccountAmount += amountToAdd;
+        }
+
+        // Profit percentage is an absolute setting: the supplied value replaces the stored one.
+        if (profitPercentage.HasValue)
+        {
+            user.ProfitPercentage = profitPercentage.Value;
+        }
 
         await _context.SaveChangesAsync();
 

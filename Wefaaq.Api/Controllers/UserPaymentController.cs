@@ -217,8 +217,39 @@ public class UserPaymentController : ControllerBase
     }
 
     /// <summary>
-    /// Top up a user's account (Admin only). The amount is ADDED to both Initial and Current
-    /// balances (cumulative) and a UserPayment row of Type=Initial is logged for traceability.
+    /// Get the current user's own aggregated summary (self view). Available to any authenticated user.
+    /// </summary>
+    [HttpGet("my-summary")]
+    [ProducesResponseType(typeof(UserPaymentSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetMySummary()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in claims" });
+            }
+
+            var summary = await _userPaymentService.GetUserSummaryAsync(userId.Value);
+            if (summary == null)
+            {
+                return NotFound(new { message = "User summary not found" });
+            }
+            return Ok(summary);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while getting current user's summary");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update a user's account settings (Admin only): optionally top up the balance (the amount is
+    /// ADDED to both Initial and Current balances and logged as a Type=Initial row) and/or set the
+    /// profit-share percentage. At least one of the two must be supplied.
     /// </summary>
     [HttpPut("set-initial-amount/{userId}")]
     [Authorize(Policy = "AdminOnly")]
@@ -230,12 +261,18 @@ public class UserPaymentController : ControllerBase
     {
         try
         {
-            if (dto.InitialAccountAmount <= 0)
+            if (dto.InitialAccountAmount < 0)
             {
-                return BadRequest(new { message = "Top-up amount must be greater than zero" });
+                return BadRequest(new { message = "Top-up amount cannot be negative" });
             }
 
-            var updated = await _userPaymentService.SetInitialAccountAmountAsync(userId, dto.InitialAccountAmount, dto.Description);
+            if (dto.InitialAccountAmount <= 0 && !dto.ProfitPercentage.HasValue)
+            {
+                return BadRequest(new { message = "Provide a top-up amount and/or a profit percentage" });
+            }
+
+            var updated = await _userPaymentService.SetInitialAccountAmountAsync(
+                userId, dto.InitialAccountAmount, dto.ProfitPercentage, dto.Description);
             if (updated == null)
             {
                 return NotFound(new { message = $"User with ID {userId} not found" });

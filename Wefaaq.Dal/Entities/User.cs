@@ -82,4 +82,10 @@ public class User
     /// Running balance: InitialAccountAmount minus the sum of Payment-type entries since it was last set
     /// </summary>
     public decimal CurrentAccountAmount { get; set; }
+
+    /// <summary>
+    /// Profit share percentage (0-100) the admin allocates to the user. The user's cut is
+    /// ProfitPercentage% of their profit total for the selected period (نسبة الأرباح).
+    /// </summary>
+    public decimal ProfitPercentage { get; set; }
 }
