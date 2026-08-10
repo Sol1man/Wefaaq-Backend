@@ -78,6 +78,11 @@ public class WefaaqContext : DbContext
     /// </summary>
     public DbSet<ClientOperation> ClientOperations { get; set; }
 
+    /// <summary>
+    /// Business costs / expenses table (المصروفات)
+    /// </summary>
+    public DbSet<Cost> Costs { get; set; }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -454,6 +459,23 @@ public class WefaaqContext : DbContext
             entity.HasIndex(e => e.Kind);
             entity.HasIndex(e => e.Type);
             entity.HasIndex(e => e.CreatedAt);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // Configure Cost entity
+        modelBuilder.Entity<Cost>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Indexes
+            entity.HasIndex(e => e.CostDate);
 
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);

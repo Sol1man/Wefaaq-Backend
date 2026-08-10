@@ -253,5 +253,15 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
+
+        // Cost mappings
+        CreateMap<Cost, CostDto>();
+        CreateMap<CostCreateDto, Cost>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CostDate, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
     }
 }
