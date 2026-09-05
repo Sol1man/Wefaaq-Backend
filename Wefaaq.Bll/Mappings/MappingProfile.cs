@@ -263,5 +263,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
+
+        // Employee salaries mappings
+        CreateMap<ExternalEmployee, ExternalEmployeeDto>();
+        CreateMap<EmployeeDeduction, EmployeeDeductionDto>();
     }
 }

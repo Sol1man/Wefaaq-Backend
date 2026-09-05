@@ -21,7 +21,11 @@ public class ClientOperation : ISoftDeletable
     /// <summary>Type of operation (نوع العملية) — null for payment records (Kind = Payment)</summary>
     public OperationType? Type { get; set; }
 
-    /// <summary>Free-text type label, used only when Type = Other (نوع مخصص يكتبه المستخدم)</summary>
+    /// <summary>
+    /// Free-text label the user types (نص حر يكتبه المستخدم). Used for a service when
+    /// Type = Other, and as the optional description of a payment (Kind = Payment).
+    /// When empty the record falls back to its default label.
+    /// </summary>
     [MaxLength(255)]
     public string? CustomType { get; set; }
 

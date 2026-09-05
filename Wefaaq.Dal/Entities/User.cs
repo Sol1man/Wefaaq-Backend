@@ -88,4 +88,9 @@ public class User
     /// ProfitPercentage% of their profit total for the selected period (نسبة الأرباح).
     /// </summary>
     public decimal ProfitPercentage { get; set; }
+
+    /// <summary>
+    /// Monthly salary the user is paid as an employee (الراتب). Drives the employee salaries page.
+    /// </summary>
+    public decimal Salary { get; set; }
 }

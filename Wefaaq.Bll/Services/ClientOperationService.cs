@@ -126,6 +126,8 @@ public class ClientOperationService : IClientOperationService
             Id = Guid.NewGuid(),
             Kind = OperationKind.Payment,
             Type = null,
+            // Blank description → the row keeps the default payment label.
+            CustomType = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim(),
             TargetType = dto.TargetType,
             Price = dto.Amount,
             Notes = dto.Notes,
@@ -273,7 +275,7 @@ public class ClientOperationService : IClientOperationService
     private static string GetTypeDisplay(ClientOperation op)
     {
         if (op.Kind == OperationKind.Payment)
-            return "دفعة من العميل";
+            return string.IsNullOrWhiteSpace(op.CustomType) ? "دفعة من العميل" : op.CustomType;
 
         if (op.Type == null)
             return string.Empty;

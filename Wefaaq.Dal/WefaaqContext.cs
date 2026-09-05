@@ -83,6 +83,16 @@ public class WefaaqContext : DbContext
     /// </summary>
     public DbSet<Cost> Costs { get; set; }
 
+    /// <summary>
+    /// External employees table (الموظفون الخارجيون)
+    /// </summary>
+    public DbSet<ExternalEmployee> ExternalEmployees { get; set; }
+
+    /// <summary>
+    /// Employee salary deductions table (خصومات الموظفين)
+    /// </summary>
+    public DbSet<EmployeeDeduction> EmployeeDeductions { get; set; }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -261,6 +271,7 @@ public class WefaaqContext : DbContext
             entity.Property(e => e.InitialAccountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             entity.Property(e => e.CurrentAccountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             entity.Property(e => e.ProfitPercentage).HasColumnType("decimal(5,2)").HasDefaultValue(0m);
+            entity.Property(e => e.Salary).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 
@@ -480,6 +491,62 @@ public class WefaaqContext : DbContext
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);
         });
+
+        // Configure ExternalEmployee entity
+        modelBuilder.Entity<ExternalEmployee>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Salary).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Indexes
+            entity.HasIndex(e => e.Name);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // Configure EmployeeDeduction entity
+        modelBuilder.Entity<EmployeeDeduction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Optional FK to the system user the deduction belongs to
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // Optional FK to the external employee the deduction belongs to
+            entity.HasOne(e => e.ExternalEmployee)
+                .WithMany()
+                .HasForeignKey(e => e.ExternalEmployeeId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
+
+            // CHECK constraint: must belong to either a User OR an ExternalEmployee (not both, not neither)
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_EmployeeDeduction_User_XOR_External",
+                "([UserId] IS NOT NULL AND [ExternalEmployeeId] IS NULL) OR ([UserId] IS NULL AND [ExternalEmployeeId] IS NOT NULL)"
+            ));
+
+            // Indexes
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ExternalEmployeeId);
+            entity.HasIndex(e => e.DeductionDate);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
     }
 
     public override int SaveChanges()
@@ -573,6 +640,18 @@ public class WefaaqContext : DbContext
                 if (entry.State == EntityState.Added)
                     operation.CreatedAt = DateTime.UtcNow;
                 operation.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is ExternalEmployee externalEmployee)
+            {
+                if (entry.State == EntityState.Added)
+                    externalEmployee.CreatedAt = DateTime.UtcNow;
+                externalEmployee.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is EmployeeDeduction deduction)
+            {
+                if (entry.State == EntityState.Added)
+                    deduction.CreatedAt = DateTime.UtcNow;
+                deduction.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

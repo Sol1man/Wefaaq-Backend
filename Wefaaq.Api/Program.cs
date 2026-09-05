@@ -69,6 +69,7 @@ builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
 builder.Services.AddScoped<IPasswordEncryptionService, PasswordEncryptionService>();
 builder.Services.AddScoped<IClientOperationService, ClientOperationService>();
 builder.Services.AddScoped<ICostService, CostService>();
+builder.Services.AddScoped<IEmployeeSalaryService, EmployeeSalaryService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));

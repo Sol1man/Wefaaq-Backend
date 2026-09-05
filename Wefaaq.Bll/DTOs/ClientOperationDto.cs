@@ -65,6 +65,12 @@ public class ClientOperationPaymentCreateDto
     public OperationTargetType TargetType { get; set; }
     /// <summary>Positive amount of cash the client paid (المبلغ المدفوع)</summary>
     public decimal Amount { get; set; }
+    /// <summary>
+    /// Optional free-text description shown in place of the default "دفعة من العميل"
+    /// label (البيان). Stored in ClientOperation.CustomType, the same field a service
+    /// of type Other uses.
+    /// </summary>
+    public string? Description { get; set; }
     public string? Notes { get; set; }
 
     // Target — only the relevant FK is provided based on TargetType
