@@ -36,19 +36,26 @@ public class EmployeeSalaryRowDto
     /// <summary>Sum of the employee's deductions dated inside the selected month</summary>
     public decimal Deduction { get; set; }
 
-    /// <summary>Salary + Profit − Deduction</summary>
+    /// <summary>
+    /// Sum of the employee's loans dated inside the selected month. A loan carries no
+    /// profit or interest — it is subtracted from the month's pay just like a deduction.
+    /// </summary>
+    public decimal Loan { get; set; }
+
+    /// <summary>Salary + Profit − Deduction − Loan</summary>
     public decimal Net { get; set; }
 }
 
 /// <summary>
 /// Full detail view for one employee in one month: the salary row plus the month's
-/// deductions, newest first.
+/// deductions and loans, each newest first and kept as separate lists.
 /// </summary>
 public class EmployeeSalaryDetailsDto : EmployeeSalaryRowDto
 {
     public int Year { get; set; }
     public int Month { get; set; }
     public List<EmployeeDeductionDto> Deductions { get; set; } = new();
+    public List<EmployeeLoanDto> Loans { get; set; } = new();
 }
 
 /// <summary>
@@ -77,6 +84,34 @@ public class EmployeeDeductionCreateDto
     public decimal Amount { get; set; }
     public string? Description { get; set; }
     public DateTime? DeductionDate { get; set; }
+}
+
+/// <summary>
+/// Employee loan response DTO (سلفة)
+/// </summary>
+public class EmployeeLoanDto
+{
+    public Guid Id { get; set; }
+    public decimal Amount { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public DateTime LoanDate { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+/// <summary>
+/// DTO for recording a loan against an employee. LoanDate is optional — defaults to "now".
+/// </summary>
+public class EmployeeLoanCreateDto
+{
+    /// <summary>"user" or "external"</summary>
+    public string Type { get; set; } = EmployeeRefType.User;
+
+    /// <summary>User id or external employee Guid, as a string</summary>
+    public string Id { get; set; } = string.Empty;
+
+    public decimal Amount { get; set; }
+    public string? Description { get; set; }
+    public DateTime? LoanDate { get; set; }
 }
 
 /// <summary>

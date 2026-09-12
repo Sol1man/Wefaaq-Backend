@@ -246,6 +246,55 @@ public class EmployeeSalaryController : ControllerBase
         }
     }
 
+    /// <summary>Record a loan advanced to an employee</summary>
+    [HttpPost("loans/add")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(typeof(EmployeeLoanDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> AddLoan([FromBody] EmployeeLoanCreateDto dto)
+    {
+        try
+        {
+            var loan = await _service.AddLoanAsync(dto);
+            return Ok(loan);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = "Validation failed", errors = ex.Errors.Select(e => e.ErrorMessage) });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding an employee loan");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>Delete a loan (soft delete)</summary>
+    [HttpDelete("loans/delete/{id}")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteLoan(Guid id)
+    {
+        try
+        {
+            var deleted = await _service.DeleteLoanAsync(id);
+            if (!deleted)
+            {
+                return NotFound(new { message = $"Loan with ID {id} not found" });
+            }
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while deleting loan {LoanId}", id);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     /// <summary>
     /// Get the current user's ID from claims
     /// </summary>

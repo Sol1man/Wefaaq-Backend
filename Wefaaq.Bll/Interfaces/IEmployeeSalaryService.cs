@@ -27,4 +27,10 @@ public interface IEmployeeSalaryService
 
     /// <summary>Delete a deduction (soft delete)</summary>
     Task<bool> DeleteDeductionAsync(Guid id);
+
+    /// <summary>Record a loan advanced to an employee</summary>
+    Task<EmployeeLoanDto> AddLoanAsync(EmployeeLoanCreateDto dto);
+
+    /// <summary>Delete a loan (soft delete)</summary>
+    Task<bool> DeleteLoanAsync(Guid id);
 }

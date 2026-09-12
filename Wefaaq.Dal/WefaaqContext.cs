@@ -93,6 +93,11 @@ public class WefaaqContext : DbContext
     /// </summary>
     public DbSet<EmployeeDeduction> EmployeeDeductions { get; set; }
 
+    /// <summary>
+    /// Employee loans table (سلف الموظفين)
+    /// </summary>
+    public DbSet<EmployeeLoan> EmployeeLoans { get; set; }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -547,6 +552,45 @@ public class WefaaqContext : DbContext
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);
         });
+
+        // Configure EmployeeLoan entity — same shape as EmployeeDeduction, separate table
+        modelBuilder.Entity<EmployeeLoan>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Optional FK to the system user the loan belongs to
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // Optional FK to the external employee the loan belongs to
+            entity.HasOne(e => e.ExternalEmployee)
+                .WithMany()
+                .HasForeignKey(e => e.ExternalEmployeeId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
+
+            // CHECK constraint: must belong to either a User OR an ExternalEmployee (not both, not neither)
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_EmployeeLoan_User_XOR_External",
+                "([UserId] IS NOT NULL AND [ExternalEmployeeId] IS NULL) OR ([UserId] IS NULL AND [ExternalEmployeeId] IS NOT NULL)"
+            ));
+
+            // Indexes
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ExternalEmployeeId);
+            entity.HasIndex(e => e.LoanDate);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
     }
 
     public override int SaveChanges()
@@ -652,6 +696,12 @@ public class WefaaqContext : DbContext
                 if (entry.State == EntityState.Added)
                     deduction.CreatedAt = DateTime.UtcNow;
                 deduction.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is EmployeeLoan loan)
+            {
+                if (entry.State == EntityState.Added)
+                    loan.CreatedAt = DateTime.UtcNow;
+                loan.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

@@ -40,3 +40,25 @@ public class EmployeeDeductionCreateDtoValidator : AbstractValidator<EmployeeDed
             .MaximumLength(500).WithMessage("Description cannot exceed 500 characters (الوصف لا يمكن أن يتجاوز 500 حرف)");
     }
 }
+
+/// <summary>
+/// Validator for EmployeeLoanCreateDto
+/// </summary>
+public class EmployeeLoanCreateDtoValidator : AbstractValidator<EmployeeLoanCreateDto>
+{
+    public EmployeeLoanCreateDtoValidator()
+    {
+        RuleFor(x => x.Type)
+            .Must(t => t == EmployeeRefType.User || t == EmployeeRefType.External)
+            .WithMessage("Employee type must be 'user' or 'external' (نوع الموظف غير صالح)");
+
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Employee is required (الموظف مطلوب)");
+
+        RuleFor(x => x.Amount)
+            .GreaterThan(0).WithMessage("Amount must be greater than 0 (المبلغ يجب أن يكون أكبر من صفر)");
+
+        RuleFor(x => x.Description)
+            .MaximumLength(500).WithMessage("Description cannot exceed 500 characters (الوصف لا يمكن أن يتجاوز 500 حرف)");
+    }
+}

@@ -267,5 +267,6 @@ public class MappingProfile : Profile
         // Employee salaries mappings
         CreateMap<ExternalEmployee, ExternalEmployeeDto>();
         CreateMap<EmployeeDeduction, EmployeeDeductionDto>();
+        CreateMap<EmployeeLoan, EmployeeLoanDto>();
     }
 }

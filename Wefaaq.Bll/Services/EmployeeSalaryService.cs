@@ -23,6 +23,7 @@ public class EmployeeSalaryService : IEmployeeSalaryService
     private readonly IMapper _mapper;
     private readonly IValidator<ExternalEmployeeCreateDto> _externalValidator;
     private readonly IValidator<EmployeeDeductionCreateDto> _deductionValidator;
+    private readonly IValidator<EmployeeLoanCreateDto> _loanValidator;
     private readonly ILogger<EmployeeSalaryService> _logger;
 
     public EmployeeSalaryService(
@@ -30,12 +31,14 @@ public class EmployeeSalaryService : IEmployeeSalaryService
         IMapper mapper,
         IValidator<ExternalEmployeeCreateDto> externalValidator,
         IValidator<EmployeeDeductionCreateDto> deductionValidator,
+        IValidator<EmployeeLoanCreateDto> loanValidator,
         ILogger<EmployeeSalaryService> logger)
     {
         _context = context;
         _mapper = mapper;
         _externalValidator = externalValidator;
         _deductionValidator = deductionValidator;
+        _loanValidator = loanValidator;
         _logger = logger;
     }
 
@@ -63,7 +66,11 @@ public class EmployeeSalaryService : IEmployeeSalaryService
                 Deduction = _context.EmployeeDeductions
                     .Where(d => d.UserId == u.Id
                         && d.DeductionDate >= monthStart && d.DeductionDate < monthEnd)
-                    .Sum(d => (decimal?)d.Amount) ?? 0m
+                    .Sum(d => (decimal?)d.Amount) ?? 0m,
+                Loan = _context.EmployeeLoans
+                    .Where(l => l.UserId == u.Id
+                        && l.LoanDate >= monthStart && l.LoanDate < monthEnd)
+                    .Sum(l => (decimal?)l.Amount) ?? 0m
             })
             .ToListAsync();
 
@@ -76,7 +83,8 @@ public class EmployeeSalaryService : IEmployeeSalaryService
             Salary = u.Salary,
             ProfitPercentage = u.ProfitPercentage,
             ProfitBase = u.ProfitBase,
-            Deduction = u.Deduction
+            Deduction = u.Deduction,
+            Loan = u.Loan
         });
 
         // External employees — payroll only, so no profit history to draw on.
@@ -89,7 +97,11 @@ public class EmployeeSalaryService : IEmployeeSalaryService
                 Deduction = _context.EmployeeDeductions
                     .Where(d => d.ExternalEmployeeId == e.Id
                         && d.DeductionDate >= monthStart && d.DeductionDate < monthEnd)
-                    .Sum(d => (decimal?)d.Amount) ?? 0m
+                    .Sum(d => (decimal?)d.Amount) ?? 0m,
+                Loan = _context.EmployeeLoans
+                    .Where(l => l.ExternalEmployeeId == e.Id
+                        && l.LoanDate >= monthStart && l.LoanDate < monthEnd)
+                    .Sum(l => (decimal?)l.Amount) ?? 0m
             })
             .ToListAsync();
 
@@ -102,7 +114,8 @@ public class EmployeeSalaryService : IEmployeeSalaryService
             Salary = e.Salary,
             ProfitPercentage = 0m,
             ProfitBase = 0m,
-            Deduction = e.Deduction
+            Deduction = e.Deduction,
+            Loan = e.Loan
         });
 
         var rows = userRows.Concat(externalRows).ToList();
@@ -172,6 +185,16 @@ public class EmployeeSalaryService : IEmployeeSalaryService
 
         details.Deductions = _mapper.Map<List<EmployeeDeductionDto>>(deductions);
         details.Deduction = deductions.Sum(d => d.Amount);
+
+        // Loans for the month, latest first — a separate history from deductions.
+        var loans = await LoansQuery(details.Type, details.Id)
+            .Where(l => l.LoanDate >= monthStart && l.LoanDate < monthEnd)
+            .OrderByDescending(l => l.LoanDate)
+            .ToListAsync();
+
+        details.Loans = _mapper.Map<List<EmployeeLoanDto>>(loans);
+        details.Loan = loans.Sum(l => l.Amount);
+
         FillDerived(details);
 
         return details;
@@ -220,6 +243,15 @@ public class EmployeeSalaryService : IEmployeeSalaryService
         {
             deduction.IsDeleted = true;
             deduction.DeletedAt = DateTime.UtcNow;
+        }
+
+        var loans = await _context.EmployeeLoans
+            .Where(l => l.ExternalEmployeeId == id)
+            .ToListAsync();
+        foreach (var loan in loans)
+        {
+            loan.IsDeleted = true;
+            loan.DeletedAt = DateTime.UtcNow;
         }
 
         await _context.SaveChangesAsync();
@@ -319,6 +351,69 @@ public class EmployeeSalaryService : IEmployeeSalaryService
         return true;
     }
 
+    public async Task<EmployeeLoanDto> AddLoanAsync(EmployeeLoanCreateDto dto)
+    {
+        var validationResult = await _loanValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors);
+        }
+
+        var loan = new EmployeeLoan
+        {
+            Id = Guid.NewGuid(),
+            Amount = dto.Amount,
+            Description = dto.Description?.Trim() ?? string.Empty,
+            // Blank date → record it against the moment of creation.
+            LoanDate = dto.LoanDate ?? DateTime.UtcNow
+        };
+
+        if (IsExternal(dto.Type))
+        {
+            var employeeId = ParseExternalId(dto.Id);
+            var exists = await _context.ExternalEmployees.AnyAsync(e => e.Id == employeeId);
+            if (!exists)
+            {
+                throw new ValidationException("External employee not found (الموظف الخارجي غير موجود)");
+            }
+            loan.ExternalEmployeeId = employeeId;
+        }
+        else
+        {
+            var userId = ParseUserId(dto.Id);
+            var exists = await _context.Users.AnyAsync(u => u.Id == userId);
+            if (!exists)
+            {
+                throw new ValidationException("User not found (المستخدم غير موجود)");
+            }
+            loan.UserId = userId;
+        }
+
+        _context.EmployeeLoans.Add(loan);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "[EmployeeSalaries] Added loan {LoanId} type={Type} employee={EmployeeId} amount={Amount}",
+            loan.Id, dto.Type, dto.Id, loan.Amount);
+
+        return _mapper.Map<EmployeeLoanDto>(loan);
+    }
+
+    public async Task<bool> DeleteLoanAsync(Guid id)
+    {
+        var loan = await _context.EmployeeLoans.FirstOrDefaultAsync(l => l.Id == id);
+        if (loan == null)
+        {
+            return false;
+        }
+
+        loan.IsDeleted = true;
+        loan.DeletedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
     // Helpers ────────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -349,7 +444,8 @@ public class EmployeeSalaryService : IEmployeeSalaryService
     private static void FillDerived(EmployeeSalaryRowDto row)
     {
         row.Profit = Math.Round(row.ProfitBase * row.ProfitPercentage / 100m, 2);
-        row.Net = row.Salary + row.Profit - row.Deduction;
+        // A loan carries no interest — it comes off the month's pay exactly like a deduction.
+        row.Net = row.Salary + row.Profit - row.Deduction - row.Loan;
     }
 
     private IQueryable<EmployeeDeduction> DeductionsQuery(string type, string id)
@@ -362,6 +458,18 @@ public class EmployeeSalaryService : IEmployeeSalaryService
 
         var userId = ParseUserId(id);
         return _context.EmployeeDeductions.Where(d => d.UserId == userId);
+    }
+
+    private IQueryable<EmployeeLoan> LoansQuery(string type, string id)
+    {
+        if (IsExternal(type))
+        {
+            var employeeId = ParseExternalId(id);
+            return _context.EmployeeLoans.Where(l => l.ExternalEmployeeId == employeeId);
+        }
+
+        var userId = ParseUserId(id);
+        return _context.EmployeeLoans.Where(l => l.UserId == userId);
     }
 
     private static bool IsExternal(string? type) =>
