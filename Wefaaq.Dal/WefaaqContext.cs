@@ -98,6 +98,21 @@ public class WefaaqContext : DbContext
     /// </summary>
     public DbSet<EmployeeLoan> EmployeeLoans { get; set; }
 
+    /// <summary>
+    /// Rent agreements table (الإيجارات)
+    /// </summary>
+    public DbSet<Rent> Rents { get; set; }
+
+    /// <summary>
+    /// Monthly rent dues table (قيم الإيجار الشهرية)
+    /// </summary>
+    public DbSet<RentCharge> RentCharges { get; set; }
+
+    /// <summary>
+    /// Rent payments table (دفعات الإيجار)
+    /// </summary>
+    public DbSet<RentPayment> RentPayments { get; set; }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -591,6 +606,99 @@ public class WefaaqContext : DbContext
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);
         });
+
+        // Configure Rent entity
+        modelBuilder.Entity<Rent>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.AssetName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.Property(e => e.MonthlyAmount).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.ExternalPersonName).HasMaxLength(255);
+            entity.Property(e => e.ExternalPersonIdNumber).HasMaxLength(50);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Optional FKs to the three possible renters. NoAction mirrors ClientOperation —
+            // it avoids the Client -> ClientBranch -> Rent cascade cycle.
+            entity.HasOne(e => e.Client)
+                .WithMany()
+                .HasForeignKey(e => e.ClientId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            entity.HasOne(e => e.ClientBranch)
+                .WithMany()
+                .HasForeignKey(e => e.ClientBranchId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            entity.HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // Indexes
+            entity.HasIndex(e => e.ClientId);
+            entity.HasIndex(e => e.ClientBranchId);
+            entity.HasIndex(e => e.OrganizationId);
+            entity.HasIndex(e => e.TargetType);
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.AssetName);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // Configure RentCharge entity
+        modelBuilder.Entity<RentCharge>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasOne(e => e.Rent)
+                .WithMany(r => r.Charges)
+                .HasForeignKey(e => e.RentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // One due per rent per month. Filtered so soft-deleted rows don't block a re-add.
+            entity.HasIndex(e => new { e.RentId, e.Year, e.Month })
+                .IsUnique()
+                .HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(e => new { e.Year, e.Month });
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // Configure RentPayment entity
+        modelBuilder.Entity<RentPayment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasOne(e => e.Rent)
+                .WithMany(r => r.Payments)
+                .HasForeignKey(e => e.RentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            entity.HasIndex(e => e.RentId);
+            entity.HasIndex(e => e.PaymentDate);
+
+            // Global query filter for soft delete
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
     }
 
     public override int SaveChanges()
@@ -702,6 +810,24 @@ public class WefaaqContext : DbContext
                 if (entry.State == EntityState.Added)
                     loan.CreatedAt = DateTime.UtcNow;
                 loan.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is Rent rent)
+            {
+                if (entry.State == EntityState.Added)
+                    rent.CreatedAt = DateTime.UtcNow;
+                rent.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is RentCharge rentCharge)
+            {
+                if (entry.State == EntityState.Added)
+                    rentCharge.CreatedAt = DateTime.UtcNow;
+                rentCharge.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is RentPayment rentPayment)
+            {
+                if (entry.State == EntityState.Added)
+                    rentPayment.CreatedAt = DateTime.UtcNow;
+                rentPayment.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

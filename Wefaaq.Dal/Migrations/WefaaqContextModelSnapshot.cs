@@ -764,6 +764,175 @@ namespace Wefaaq.Dal.Migrations
                     b.ToTable("OrganizationWorkers");
                 });
 
+            modelBuilder.Entity("Wefaaq.Dal.Entities.Rent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AssetName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid?>("ClientBranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ClientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalPersonIdNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ExternalPersonName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MonthlyAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TargetType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetName");
+
+                    b.HasIndex("ClientBranchId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("TargetType");
+
+                    b.ToTable("Rents");
+                });
+
+            modelBuilder.Entity("Wefaaq.Dal.Entities.RentCharge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Year", "Month");
+
+                    b.HasIndex("RentId", "Year", "Month")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("RentCharges");
+                });
+
+            modelBuilder.Entity("Wefaaq.Dal.Entities.RentPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentDate");
+
+                    b.HasIndex("RentId");
+
+                    b.ToTable("RentPayments");
+                });
+
             modelBuilder.Entity("Wefaaq.Dal.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -1102,6 +1271,52 @@ namespace Wefaaq.Dal.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("Wefaaq.Dal.Entities.Rent", b =>
+                {
+                    b.HasOne("Wefaaq.Dal.Entities.ClientBranch", "ClientBranch")
+                        .WithMany()
+                        .HasForeignKey("ClientBranchId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Wefaaq.Dal.Entities.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Wefaaq.Dal.Entities.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Client");
+
+                    b.Navigation("ClientBranch");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("Wefaaq.Dal.Entities.RentCharge", b =>
+                {
+                    b.HasOne("Wefaaq.Dal.Entities.Rent", "Rent")
+                        .WithMany("Charges")
+                        .HasForeignKey("RentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rent");
+                });
+
+            modelBuilder.Entity("Wefaaq.Dal.Entities.RentPayment", b =>
+                {
+                    b.HasOne("Wefaaq.Dal.Entities.Rent", "Rent")
+                        .WithMany("Payments")
+                        .HasForeignKey("RentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rent");
+                });
+
             modelBuilder.Entity("Wefaaq.Dal.Entities.User", b =>
                 {
                     b.HasOne("Wefaaq.Dal.Entities.Organization", "Organization")
@@ -1165,6 +1380,13 @@ namespace Wefaaq.Dal.Migrations
                     b.Navigation("Usernames");
 
                     b.Navigation("Workers");
+                });
+
+            modelBuilder.Entity("Wefaaq.Dal.Entities.Rent", b =>
+                {
+                    b.Navigation("Charges");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("Wefaaq.Dal.Entities.Role", b =>

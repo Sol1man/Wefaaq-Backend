@@ -268,5 +268,9 @@ public class MappingProfile : Profile
         CreateMap<ExternalEmployee, ExternalEmployeeDto>();
         CreateMap<EmployeeDeduction, EmployeeDeductionDto>();
         CreateMap<EmployeeLoan, EmployeeLoanDto>();
+
+        // Rent mappings — rows and details are assembled by hand in RentService
+        // because their figures are computed, not mapped.
+        CreateMap<RentPayment, RentPaymentDto>();
     }
 }
