@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
@@ -27,6 +29,7 @@ public class ExternalWorkerController : ControllerBase
     /// Get all external workers
     /// </summary>
     [HttpGet("get-all")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(List<ExternalWorkerDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -47,6 +50,7 @@ public class ExternalWorkerController : ControllerBase
     /// Get external worker by ID
     /// </summary>
     [HttpGet("get/{id}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(ExternalWorkerDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -72,6 +76,7 @@ public class ExternalWorkerController : ControllerBase
     /// Get all external workers for a specific client
     /// </summary>
     [HttpGet("by-client/{clientId}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(IEnumerable<ExternalWorkerDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByClientId(Guid clientId)
@@ -92,6 +97,7 @@ public class ExternalWorkerController : ControllerBase
     /// Get all external workers for a specific client branch
     /// </summary>
     [HttpGet("by-branch/{branchId}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(IEnumerable<ExternalWorkerDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByClientBranchId(Guid branchId)
@@ -112,6 +118,7 @@ public class ExternalWorkerController : ControllerBase
     /// Create new external worker
     /// </summary>
     [HttpPost("add")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ExternalWorkerDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] ExternalWorkerCreateDto workerCreateDto)
@@ -137,6 +144,7 @@ public class ExternalWorkerController : ControllerBase
     /// Update existing external worker
     /// </summary>
     [HttpPut("edit/{id}")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ExternalWorkerDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -164,10 +172,10 @@ public class ExternalWorkerController : ControllerBase
     }
 
     /// <summary>
-    /// Delete external worker (Admin only, soft delete)
+    /// Delete external worker (soft delete). Requires Delete on the Clients page.
     /// </summary>
     [HttpDelete("delete/{id}")]
-    [Authorize(Policy = "AdminOnly")]
+    [RequirePermission(PermissionAction.Delete, PageKeys.Clients)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

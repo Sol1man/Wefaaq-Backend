@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
@@ -30,6 +32,7 @@ public class ClientController : ControllerBase
     /// </summary>
     /// <returns>List of clients</returns>
     [HttpGet("get-all")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients, PageKeys.Organizations, PageKeys.ClientOperations, PageKeys.Rents)]
     [ProducesResponseType(typeof(List<ClientDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -52,6 +55,7 @@ public class ClientController : ControllerBase
     /// <param name="id">Client ID</param>
     /// <returns>Client details</returns>
     [HttpGet("get/{id}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -79,6 +83,7 @@ public class ClientController : ControllerBase
     /// <param name="clientCreateDto">Client creation data</param>
     /// <returns>Created client</returns>
     [HttpPost("add")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] ClientCreateDto clientCreateDto)
@@ -107,6 +112,7 @@ public class ClientController : ControllerBase
     /// <param name="id">Client ID</param>
     /// <returns>Updated client</returns>
     [HttpPut("edit/{id}")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -134,12 +140,12 @@ public class ClientController : ControllerBase
     }
 
     /// <summary>
-    /// Delete client (Admin only)
+    /// Delete client. Requires Delete on the Clients page.
     /// </summary>
     /// <param name="id">Client ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("delete/{id}")]
-    [Authorize(Policy = "AdminOnly")]
+    [RequirePermission(PermissionAction.Delete, PageKeys.Clients)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -172,6 +178,7 @@ public class ClientController : ControllerBase
     /// <param name="id">Client ID</param>
     /// <returns>Client with organizations, branches, and external workers</returns>
     [HttpGet("organizations/{id}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -199,6 +206,7 @@ public class ClientController : ControllerBase
     /// <param name="dto">Client and organizations creation data</param>
     /// <returns>Created client with organizations</returns>
     [HttpPost("add-with-organizations")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateWithOrganizations([FromBody] ClientWithOrganizationsCreateDto dto)
@@ -227,6 +235,7 @@ public class ClientController : ControllerBase
     /// <param name="id">Client ID</param>
     /// <returns>Updated client with organizations</returns>
     [HttpPut("edit-with-organizations/{id}")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -262,6 +271,7 @@ public class ClientController : ControllerBase
     /// </summary>
     /// <returns>List of creditor clients</returns>
     [HttpGet("creditors")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(IEnumerable<ClientDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetCreditors()
@@ -283,6 +293,7 @@ public class ClientController : ControllerBase
     /// </summary>
     /// <returns>List of debtor clients</returns>
     [HttpGet("debtors")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(IEnumerable<ClientDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetDebtors()
@@ -307,6 +318,7 @@ public class ClientController : ControllerBase
     /// Create new client with all details (organizations, branches, external workers)
     /// </summary>
     [HttpPost("add-with-details")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateWithDetails([FromBody] ClientWithDetailsCreateDto dto)
@@ -332,6 +344,7 @@ public class ClientController : ControllerBase
     /// Update existing client with all details (organizations, branches, external workers)
     /// </summary>
     [HttpPut("edit-with-details/{id}")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -366,6 +379,7 @@ public class ClientController : ControllerBase
     /// Add organization to existing client
     /// </summary>
     [HttpPost("{clientId}/organizations")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -397,6 +411,7 @@ public class ClientController : ControllerBase
     /// Add branch to existing client
     /// </summary>
     [HttpPost("{clientId}/branches")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientBranchDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -428,6 +443,7 @@ public class ClientController : ControllerBase
     /// Add external worker to existing client
     /// </summary>
     [HttpPost("{clientId}/external-workers")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ExternalWorkerDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

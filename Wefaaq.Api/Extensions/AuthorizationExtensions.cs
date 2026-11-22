@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.Constants;
 
 namespace Wefaaq.Api.Extensions;
@@ -27,6 +28,10 @@ public static class AuthorizationExtensions
             options.AddPolicy("AdminOrUser", policy =>
                 policy.RequireRole(Roles.Admin, Roles.User));
         });
+
+        // Per-user page permissions: [RequirePermission(PermissionAction.X, PageKeys.Y)]
+        services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+        services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         return services;
     }

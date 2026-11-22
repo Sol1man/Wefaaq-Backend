@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
@@ -27,6 +29,7 @@ public class ClientBranchController : ControllerBase
     /// Get all client branches
     /// </summary>
     [HttpGet("get-all")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients, PageKeys.ClientOperations, PageKeys.Rents)]
     [ProducesResponseType(typeof(List<ClientBranchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -47,6 +50,7 @@ public class ClientBranchController : ControllerBase
     /// Get client branch by ID
     /// </summary>
     [HttpGet("get/{id}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientBranchDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -72,6 +76,7 @@ public class ClientBranchController : ControllerBase
     /// Get client branch with full details (organizations, external workers)
     /// </summary>
     [HttpGet("details/{id}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientBranchDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -97,6 +102,7 @@ public class ClientBranchController : ControllerBase
     /// Get all branches for a specific client
     /// </summary>
     [HttpGet("by-client/{clientId}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Clients)]
     [ProducesResponseType(typeof(IEnumerable<ClientBranchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByClientId(Guid clientId)
@@ -117,6 +123,7 @@ public class ClientBranchController : ControllerBase
     /// Create new client branch
     /// </summary>
     [HttpPost("add")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientBranchDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] ClientBranchCreateDto branchCreateDto)
@@ -142,6 +149,7 @@ public class ClientBranchController : ControllerBase
     /// Update existing client branch
     /// </summary>
     [HttpPut("edit/{id}")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ClientBranchDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -169,10 +177,10 @@ public class ClientBranchController : ControllerBase
     }
 
     /// <summary>
-    /// Delete client branch (Admin only, soft delete)
+    /// Delete client branch (soft delete). Requires Delete on the Clients page.
     /// </summary>
     [HttpDelete("delete/{id}")]
-    [Authorize(Policy = "AdminOnly")]
+    [RequirePermission(PermissionAction.Delete, PageKeys.Clients)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -199,6 +207,7 @@ public class ClientBranchController : ControllerBase
     /// Add organization to existing branch
     /// </summary>
     [HttpPost("{branchId}/organizations")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -230,6 +239,7 @@ public class ClientBranchController : ControllerBase
     /// Add external worker to existing branch
     /// </summary>
     [HttpPost("{branchId}/external-workers")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Clients)]
     [ProducesResponseType(typeof(ExternalWorkerDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

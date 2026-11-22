@@ -1,6 +1,7 @@
 using AutoMapper;
 using FirebaseAdmin.Auth;
 using Microsoft.Extensions.Logging;
+using Wefaaq.Bll.Constants;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 using Wefaaq.Dal.Entities;
@@ -62,6 +63,10 @@ public class AuthService(
 
                 await userRepository.AddAsync(user);
                 logger.LogInformation("New user created with FirebaseUid: {FirebaseUid}", firebaseUid);
+
+                // Reload so Role (and the permission rows) are populated — without it the very
+                // first login answered with an empty roleName and the frontend bounced the user.
+                user = await userRepository.GetByFirebaseUidAsync(firebaseUid) ?? user;
             }
             else if (!user.IsActive)
             {
@@ -75,7 +80,7 @@ public class AuthService(
             // Update last login timestamp
             await userRepository.UpdateLastLoginAsync(user.Id);
 
-            var userDto = mapper.Map<UserDto>(user);
+            var userDto = ToUserDto(user);
 
             return new LoginResponseDto
             {
@@ -150,6 +155,17 @@ public class AuthService(
     public async Task<UserDto?> GetUserByFirebaseUidAsync(string firebaseUid)
     {
         var user = await userRepository.GetByFirebaseUidAsync(firebaseUid);
-        return user != null ? mapper.Map<UserDto>(user) : null;
+        return user != null ? ToUserDto(user) : null;
+    }
+
+    /// <summary>
+    /// Maps a user and attaches their effective page permissions.
+    /// </summary>
+    private UserDto ToUserDto(User user)
+    {
+        var userDto = mapper.Map<UserDto>(user);
+        userDto.Permissions = PermissionResolver.Resolve(
+            user.PagePermissions, user.Role?.Name == Roles.Admin);
+        return userDto;
     }
 }

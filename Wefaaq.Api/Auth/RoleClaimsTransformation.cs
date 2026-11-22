@@ -1,14 +1,20 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Bll.Services;
 using Wefaaq.Dal.RepositoriesInterfaces;
 
 namespace Wefaaq.Api.Auth;
 
 /// <summary>
-/// Transforms claims to include user role from database
+/// Transforms claims to include the user's role and page permissions from the database.
+/// Runs on every authenticated request, so a role or permission change made by an admin
+/// applies on the user's next request — no re-login needed.
 /// </summary>
 public class RoleClaimsTransformation : IClaimsTransformation
 {
+    private const string UserIdClaimType = "userId";
+
     private readonly IUserRepository _userRepository;
     private readonly ILogger<RoleClaimsTransformation> _logger;
 
@@ -24,6 +30,13 @@ public class RoleClaimsTransformation : IClaimsTransformation
     {
         try
         {
+            // ASP.NET Core may call the transformation more than once per request;
+            // the database claims only need to be added once.
+            if (principal.HasClaim(c => c.Type == UserIdClaimType))
+            {
+                return principal;
+            }
+
             // Get Firebase UID from claims (Firebase uses "user_id" claim)
             var firebaseUid = principal.FindFirst("user_id")?.Value;
 
@@ -33,12 +46,20 @@ public class RoleClaimsTransformation : IClaimsTransformation
                 return principal;
             }
 
-            // Get user from database
+            // Get user (with role + page permissions) from database
             var user = await _userRepository.GetByFirebaseUidAsync(firebaseUid);
 
             if (user?.Role == null)
             {
                 _logger.LogDebug("User not found or has no role for FirebaseUid: {FirebaseUid}", firebaseUid);
+                return principal;
+            }
+
+            // A deactivated account keeps a valid Firebase token until it expires; without
+            // a role or permissions it can no longer reach anything that is protected.
+            if (!user.IsActive)
+            {
+                _logger.LogInformation("Inactive user {UserId} denied role and permission claims", user.Id);
                 return principal;
             }
 
@@ -52,7 +73,19 @@ public class RoleClaimsTransformation : IClaimsTransformation
             claimsIdentity.AddClaim(new Claim("role", user.Role.Name));
 
             // Add user ID claim for easy access
-            claimsIdentity.AddClaim(new Claim("userId", user.Id.ToString()));
+            claimsIdentity.AddClaim(new Claim(UserIdClaimType, user.Id.ToString()));
+
+            // Add one "perm" claim per granted page action (used by [RequirePermission]).
+            // Admins pass every permission check by role, so they don't need these.
+            var isAdmin = user.Role.Name == Roles.Admin;
+            if (!isAdmin)
+            {
+                var permissions = PermissionResolver.Resolve(user.PagePermissions, isAdmin: false);
+                foreach (var value in PermissionResolver.ToClaimValues(permissions))
+                {
+                    claimsIdentity.AddClaim(new Claim(PermissionCatalog.ClaimType, value));
+                }
+            }
 
             principal.AddIdentity(claimsIdentity);
 

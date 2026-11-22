@@ -1051,6 +1051,44 @@ namespace Wefaaq.Dal.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Wefaaq.Dal.Entities.UserPagePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanAddEdit")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanView")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PageKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "PageKey")
+                        .IsUnique();
+
+                    b.ToTable("UserPagePermissions");
+                });
+
             modelBuilder.Entity("Wefaaq.Dal.Entities.UserPayment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1335,6 +1373,17 @@ namespace Wefaaq.Dal.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Wefaaq.Dal.Entities.UserPagePermission", b =>
+                {
+                    b.HasOne("Wefaaq.Dal.Entities.User", "User")
+                        .WithMany("PagePermissions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Wefaaq.Dal.Entities.UserPayment", b =>
                 {
                     b.HasOne("Wefaaq.Dal.Entities.UserPayment", "RelatedPayment")
@@ -1392,6 +1441,11 @@ namespace Wefaaq.Dal.Migrations
             modelBuilder.Entity("Wefaaq.Dal.Entities.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Wefaaq.Dal.Entities.User", b =>
+                {
+                    b.Navigation("PagePermissions");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
@@ -51,6 +53,7 @@ public class UserPaymentController : ControllerBase
     /// </summary>
     /// <returns>List of current user's payments</returns>
     [HttpGet("my-payments")]
+    [RequirePermission(PermissionAction.View, PageKeys.Payments)]
     [ProducesResponseType(typeof(List<UserPaymentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetMyPayments()
@@ -79,6 +82,7 @@ public class UserPaymentController : ControllerBase
     /// <param name="dto">Payment creation data</param>
     /// <returns>Created payment</returns>
     [HttpPost("add")]
+    [RequirePermission(PermissionAction.View, PageKeys.Payments)]
     [ProducesResponseType(typeof(UserPaymentDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] UserPaymentCreateDto dto)
@@ -115,6 +119,7 @@ public class UserPaymentController : ControllerBase
     /// Create a combined operation entry (Payment, Profit, or both linked).
     /// </summary>
     [HttpPost("add-operation")]
+    [RequirePermission(PermissionAction.View, PageKeys.Payments)]
     [ProducesResponseType(typeof(IEnumerable<UserPaymentDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateOperation([FromBody] UserPaymentOperationCreateDto dto)
@@ -220,6 +225,7 @@ public class UserPaymentController : ControllerBase
     /// Get the current user's own aggregated summary (self view). Available to any authenticated user.
     /// </summary>
     [HttpGet("my-summary")]
+    [RequirePermission(PermissionAction.View, PageKeys.Payments)]
     [ProducesResponseType(typeof(UserPaymentSummaryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetMySummary()
