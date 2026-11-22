@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
@@ -23,9 +25,9 @@ public class ClientOperationController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>Get all operations (Admin only)</summary>
+    /// <summary>Get all operations</summary>
     [HttpGet("get-all")]
-    [Authorize(Policy = "AdminOnly")]
+    [RequirePermission(PermissionAction.View, PageKeys.ClientOperations)]
     public async Task<IActionResult> GetAll()
     {
         try
@@ -42,6 +44,7 @@ public class ClientOperationController : ControllerBase
 
     /// <summary>Get single operation by ID</summary>
     [HttpGet("get/{id}")]
+    [RequirePermission(PermissionAction.View, PageKeys.ClientOperations)]
     public async Task<IActionResult> GetById(Guid id)
     {
         try
@@ -61,6 +64,7 @@ public class ClientOperationController : ControllerBase
     /// Get all operations related to a client (direct + branches + organizations)
     /// </summary>
     [HttpGet("by-client/{clientId}")]
+    [RequirePermission(PermissionAction.View, PageKeys.ClientOperations)]
     public async Task<IActionResult> GetByClient(Guid clientId)
     {
         try
@@ -77,6 +81,7 @@ public class ClientOperationController : ControllerBase
 
     /// <summary>Get operations for a branch and its organizations</summary>
     [HttpGet("by-branch/{branchId}")]
+    [RequirePermission(PermissionAction.View, PageKeys.ClientOperations)]
     public async Task<IActionResult> GetByBranch(Guid branchId)
     {
         try
@@ -93,6 +98,7 @@ public class ClientOperationController : ControllerBase
 
     /// <summary>Get operations for an organization</summary>
     [HttpGet("by-organization/{organizationId}")]
+    [RequirePermission(PermissionAction.View, PageKeys.ClientOperations)]
     public async Task<IActionResult> GetByOrganization(Guid organizationId)
     {
         try
@@ -109,6 +115,7 @@ public class ClientOperationController : ControllerBase
 
     /// <summary>Create a new operation</summary>
     [HttpPost("add")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.ClientOperations)]
     public async Task<IActionResult> Create([FromBody] ClientOperationCreateDto dto)
     {
         try
@@ -130,6 +137,7 @@ public class ClientOperationController : ControllerBase
 
     /// <summary>Record a client payment (cash paid against fees) — credits the target balance</summary>
     [HttpPost("add-payment")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.ClientOperations)]
     public async Task<IActionResult> CreatePayment([FromBody] ClientOperationPaymentCreateDto dto)
     {
         try
@@ -151,6 +159,7 @@ public class ClientOperationController : ControllerBase
 
     /// <summary>Update an operation (type, price, notes)</summary>
     [HttpPut("edit/{id}")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.ClientOperations)]
     public async Task<IActionResult> Update(Guid id, [FromBody] ClientOperationUpdateDto dto)
     {
         try
@@ -170,6 +179,7 @@ public class ClientOperationController : ControllerBase
 
     /// <summary>Delete an operation</summary>
     [HttpDelete("delete/{id}")]
+    [RequirePermission(PermissionAction.Delete, PageKeys.ClientOperations)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

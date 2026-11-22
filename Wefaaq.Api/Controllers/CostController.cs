@@ -1,17 +1,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
 namespace Wefaaq.Api.Controllers;
 
 /// <summary>
-/// Business cost / expense management (المصروفات). Admin only.
+/// Business cost / expense management (المصروفات). Access is per page permission (Costs).
 /// </summary>
 [ApiController]
 [Route("api/costs")]
 [Produces("application/json")]
-[Authorize(Policy = "AdminOnly")]
+[Authorize]
 public class CostController : ControllerBase
 {
     private readonly ICostService _costService;
@@ -25,6 +27,7 @@ public class CostController : ControllerBase
 
     /// <summary>Get all costs</summary>
     [HttpGet("get-all")]
+    [RequirePermission(PermissionAction.View, PageKeys.Costs)]
     [ProducesResponseType(typeof(List<CostDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -44,6 +47,7 @@ public class CostController : ControllerBase
 
     /// <summary>Get costs within a date range</summary>
     [HttpGet("by-date-range")]
+    [RequirePermission(PermissionAction.View, PageKeys.Costs)]
     [ProducesResponseType(typeof(List<CostDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -63,6 +67,7 @@ public class CostController : ControllerBase
 
     /// <summary>Create a new cost</summary>
     [HttpPost("add")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Costs)]
     [ProducesResponseType(typeof(CostDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -86,6 +91,7 @@ public class CostController : ControllerBase
 
     /// <summary>Delete a cost (soft delete)</summary>
     [HttpDelete("delete/{id}")]
+    [RequirePermission(PermissionAction.Delete, PageKeys.Costs)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

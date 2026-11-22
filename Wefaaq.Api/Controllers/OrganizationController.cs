@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
@@ -30,6 +32,7 @@ public class OrganizationController : ControllerBase
 	/// </summary>
 	/// <returns>List of organizations</returns>
 	[HttpGet("get-all")]
+	[RequirePermission(PermissionAction.View, PageKeys.Organizations, PageKeys.ClientOperations, PageKeys.Rents)]
 	[ProducesResponseType(typeof(List<OrganizationDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> GetAll()
@@ -52,6 +55,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="id">Organization ID</param>
 	/// <returns>Organization details</returns>
 	[HttpGet("get/{id}")]
+	[RequirePermission(PermissionAction.View, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -79,6 +83,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="id">Organization ID</param>
 	/// <returns>Organization with all details</returns>
 	[HttpGet("details/{id}")]
+	[RequirePermission(PermissionAction.View, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -105,6 +110,7 @@ public class OrganizationController : ControllerBase
 	/// </summary>
 	/// <returns>List of organizations with expiring cards</returns>
 	[HttpGet("expiring-cards")]
+	[RequirePermission(PermissionAction.View, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(IEnumerable<OrganizationDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> GetWithExpiringCards()
@@ -127,6 +133,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="organizationCreateDto">Organization creation data</param>
 	/// <returns>Created organization</returns>
 	[HttpPost("add")]
+	[RequirePermission(PermissionAction.AddEdit, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> Create([FromBody] OrganizationCreateDto organizationCreateDto)
@@ -155,6 +162,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="organizationUpdateDto">Organization update data</param>
 	/// <returns>Updated organization</returns>
 	[HttpPut("edit/{id}")]
+	[RequirePermission(PermissionAction.AddEdit, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -182,12 +190,12 @@ public class OrganizationController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete organization (Admin only)
+	/// Delete organization. Requires Delete on the Organizations page.
 	/// </summary>
 	/// <param name="id">Organization ID</param>
 	/// <returns>No content on success</returns>
 	[HttpDelete("delete/{id}")]
-	[Authorize(Policy = "AdminOnly")]
+	[RequirePermission(PermissionAction.Delete, PageKeys.Organizations)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -221,6 +229,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="recordCreateDto">Record creation data</param>
 	/// <returns>Created record</returns>
 	[HttpPost("records/add/{organizationId}")]
+	[RequirePermission(PermissionAction.AddEdit, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationRecordDto), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -255,6 +264,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="recordUpdateDto">Record update data</param>
 	/// <returns>Updated record</returns>
 	[HttpPut("records/edit/{organizationId}/{recordId}")]
+	[RequirePermission(PermissionAction.AddEdit, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationRecordDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -282,13 +292,13 @@ public class OrganizationController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete organization record (Admin only)
+	/// Delete organization record. Requires Delete on the Organizations page.
 	/// </summary>
 	/// <param name="organizationId">Organization ID</param>
 	/// <param name="recordId">Record ID</param>
 	/// <returns>No content on success</returns>
 	[HttpDelete("records/delete/{organizationId}/{recordId}")]
-	[Authorize(Policy = "AdminOnly")]
+	[RequirePermission(PermissionAction.Delete, PageKeys.Organizations)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -322,6 +332,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="workerCreateDto">Worker creation data</param>
 	/// <returns>Created worker</returns>
 	[HttpPost("workers/add/{organizationId}")]
+	[RequirePermission(PermissionAction.AddEdit, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationWorkerDto), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -356,6 +367,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="workerUpdateDto">Worker update data</param>
 	/// <returns>Updated worker</returns>
 	[HttpPut("workers/edit/{organizationId}/{workerId}")]
+	[RequirePermission(PermissionAction.AddEdit, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationWorkerDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -383,13 +395,13 @@ public class OrganizationController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete organization worker (Admin only)
+	/// Delete organization worker. Requires Delete on the Organizations page.
 	/// </summary>
 	/// <param name="organizationId">Organization ID</param>
 	/// <param name="workerId">Worker ID</param>
 	/// <returns>No content on success</returns>
 	[HttpDelete("workers/delete/{organizationId}/{workerId}")]
-	[Authorize(Policy = "AdminOnly")]
+	[RequirePermission(PermissionAction.Delete, PageKeys.Organizations)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -423,6 +435,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="usernameCreateDto">Username creation data</param>
 	/// <returns>Created username</returns>
 	[HttpPost("usernames/add/{organizationId}")]
+	[RequirePermission(PermissionAction.AddEdit, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationUsernameDto), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -457,6 +470,7 @@ public class OrganizationController : ControllerBase
 	/// <param name="usernameUpdateDto">Username update data</param>
 	/// <returns>Updated username</returns>
 	[HttpPut("usernames/edit/{organizationId}/{usernameId}")]
+	[RequirePermission(PermissionAction.AddEdit, PageKeys.Organizations)]
 	[ProducesResponseType(typeof(OrganizationUsernameDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -484,13 +498,13 @@ public class OrganizationController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete organization username (Admin only)
+	/// Delete organization username. Requires Delete on the Organizations page.
 	/// </summary>
 	/// <param name="organizationId">Organization ID</param>
 	/// <param name="usernameId">Username ID</param>
 	/// <returns>No content on success</returns>
 	[HttpDelete("usernames/delete/{organizationId}/{usernameId}")]
-	[Authorize(Policy = "AdminOnly")]
+	[RequirePermission(PermissionAction.Delete, PageKeys.Organizations)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]

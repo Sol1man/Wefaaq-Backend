@@ -93,4 +93,9 @@ public class User
     /// Monthly salary the user is paid as an employee (الراتب). Drives the employee salaries page.
     /// </summary>
     public decimal Salary { get; set; }
+
+    /// <summary>
+    /// Per-page permissions the admin granted this user. Pages without a row use their defaults.
+    /// </summary>
+    public virtual ICollection<UserPagePermission> PagePermissions { get; set; } = new List<UserPagePermission>();
 }

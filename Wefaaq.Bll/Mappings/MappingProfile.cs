@@ -153,10 +153,13 @@ public class MappingProfile : Profile
 
         // User mappings
         CreateMap<User, UserDto>()
-            .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : string.Empty));
+            .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : string.Empty))
+            // Resolved by PermissionResolver (defaults + admin rules), not a straight copy
+            .ForMember(dest => dest.Permissions, opt => opt.Ignore());
         CreateMap<UserDto, User>()
             .ForMember(dest => dest.Organization, opt => opt.Ignore())
             .ForMember(dest => dest.Role, opt => opt.Ignore())
+            .ForMember(dest => dest.PagePermissions, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         // External Worker mappings

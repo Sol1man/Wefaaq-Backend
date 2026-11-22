@@ -14,13 +14,16 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     }
 
     /// <summary>
-    /// Get user by Firebase UID
+    /// Get user by Firebase UID, with role and page permissions.
+    /// Runs on every authenticated request (claims transformation), so it is a single
+    /// round trip: the permission rows (at most one per page) come back in the same query.
     /// </summary>
     public async Task<User?> GetByFirebaseUidAsync(string firebaseUid)
     {
         return await Context.Users
             .Include(u => u.Organization)
             .Include(u => u.Role)
+            .Include(u => u.PagePermissions)
             .FirstOrDefaultAsync(u => u.FirebaseUid == firebaseUid);
     }
 

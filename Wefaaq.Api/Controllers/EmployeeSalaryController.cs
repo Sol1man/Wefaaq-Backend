@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
@@ -83,6 +85,7 @@ public class EmployeeSalaryController : ControllerBase
     /// never from the caller, so nobody can read someone else's payroll.
     /// </summary>
     [HttpGet("my-details")]
+    [RequirePermission(PermissionAction.View, PageKeys.EmployeeSalaries)]
     [ProducesResponseType(typeof(EmployeeSalaryDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

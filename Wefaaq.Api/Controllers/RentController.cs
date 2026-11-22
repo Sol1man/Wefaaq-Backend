@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Wefaaq.Bll.Constants;
+using Wefaaq.Api.Auth;
 using Wefaaq.Bll.DTOs;
 using Wefaaq.Bll.Interfaces;
 
@@ -27,6 +29,7 @@ public class RentController : ControllerBase
 
     /// <summary>Get every rent with its figures for one month</summary>
     [HttpGet("by-month")]
+    [RequirePermission(PermissionAction.View, PageKeys.Rents)]
     [ProducesResponseType(typeof(List<RentRowDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByMonth([FromQuery] int year, [FromQuery] int month)
@@ -49,6 +52,7 @@ public class RentController : ControllerBase
 
     /// <summary>Get one rent with its month-by-month dues and payment history</summary>
     [HttpGet("get/{id}")]
+    [RequirePermission(PermissionAction.View, PageKeys.Rents)]
     [ProducesResponseType(typeof(RentDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -76,6 +80,7 @@ public class RentController : ControllerBase
 
     /// <summary>Create a rent agreement</summary>
     [HttpPost("add")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Rents)]
     [ProducesResponseType(typeof(RentRowDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] RentCreateDto dto)
@@ -98,6 +103,7 @@ public class RentController : ControllerBase
 
     /// <summary>Update a rent's asset, notes, agreed monthly amount or active flag</summary>
     [HttpPut("edit/{id}")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Rents)]
     [ProducesResponseType(typeof(RentRowDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -125,6 +131,7 @@ public class RentController : ControllerBase
 
     /// <summary>Delete a rent, its monthly dues and its payments (soft delete)</summary>
     [HttpDelete("delete/{id}")]
+    [RequirePermission(PermissionAction.Delete, PageKeys.Rents)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -148,6 +155,7 @@ public class RentController : ControllerBase
 
     /// <summary>Override a single month's rent amount</summary>
     [HttpPut("charges/set/{rentId}")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Rents)]
     [ProducesResponseType(typeof(RentChargeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -175,6 +183,7 @@ public class RentController : ControllerBase
 
     /// <summary>Record a payment against a rent (دفعة) — the whole month or part of it</summary>
     [HttpPost("payments/add")]
+    [RequirePermission(PermissionAction.AddEdit, PageKeys.Rents)]
     [ProducesResponseType(typeof(RentPaymentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddPayment([FromBody] RentPaymentCreateDto dto)
@@ -197,6 +206,7 @@ public class RentController : ControllerBase
 
     /// <summary>Delete a rent payment (soft delete)</summary>
     [HttpDelete("payments/delete/{id}")]
+    [RequirePermission(PermissionAction.Delete, PageKeys.Rents)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

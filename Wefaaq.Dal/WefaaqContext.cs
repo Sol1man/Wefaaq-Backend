@@ -113,6 +113,11 @@ public class WefaaqContext : DbContext
     /// </summary>
     public DbSet<RentPayment> RentPayments { get; set; }
 
+    /// <summary>
+    /// Per-user page permissions table (صلاحيات المستخدمين)
+    /// </summary>
+    public DbSet<UserPagePermission> UserPagePermissions { get; set; }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -699,6 +704,24 @@ public class WefaaqContext : DbContext
             // Global query filter for soft delete
             entity.HasQueryFilter(e => !e.IsDeleted);
         });
+
+        // Configure UserPagePermission entity
+        modelBuilder.Entity<UserPagePermission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.PageKey).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Permissions die with their user
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.PagePermissions)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // One row per user per page
+            entity.HasIndex(e => new { e.UserId, e.PageKey }).IsUnique();
+        });
     }
 
     public override int SaveChanges()
@@ -828,6 +851,10 @@ public class WefaaqContext : DbContext
                 if (entry.State == EntityState.Added)
                     rentPayment.CreatedAt = DateTime.UtcNow;
                 rentPayment.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is UserPagePermission pagePermission)
+            {
+                pagePermission.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

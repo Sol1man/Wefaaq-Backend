@@ -16,6 +16,12 @@ public class UserDto
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public decimal ProfitPercentage { get; set; }
+
+    /// <summary>
+    /// Effective per-page permissions (all granted for admins). Drives the frontend menu,
+    /// route guards and which add/edit/delete buttons are shown; the API enforces the same set.
+    /// </summary>
+    public List<PagePermissionDto> Permissions { get; set; } = new();
 }
 
 /// <summary>
